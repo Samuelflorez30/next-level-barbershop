@@ -1,0 +1,32 @@
+---
+// src/layouts/Layout.astro
+// Este bloque de frontmatter (código entre los guiones) se ejecuta en el servidor (SSG) durante el build.
+import "../styles/global.css";
+
+interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="description"
+            content="Next Level Barbershop - La experiencia de barbería más exclusiva de Neiva."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <title>{title}</title>
+    </head>
+    <!-- antialiased suaviza el renderizado de las fuentes, crucial para interfaces de lujo -->
+    <body
+        class="bg-[#0a0a0a] text-zinc-50 antialiased selection:bg-[#D4AF37] selection:text-black"
+    >
+        <!-- El <slot /> funciona como un inyector (placeholder) para el contenido de las páginas hijas -->
+        <slot />
+    </body>
+</html>
