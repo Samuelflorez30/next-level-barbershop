@@ -1,34 +1,26 @@
 ---
 // src/pages/index.astro
 import Layout from "../layouts/Layout.astro";
+import Services from "../components/Services.astro"; // Importación del módulo
 ---
 
 <Layout title="Next Level Barbershop | Inicio">
-	<!-- 
-		Contenedor principal: Ocupa el 100% del viewport.
-		Se inyecta una imagen de fondo vía CDN simulando el entorno de lujo.
-	-->
 	<main
 		class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[url('https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center"
 	>
-		<!-- Overlay Absoluto: Capa negra al 80% de opacidad para oscurecer el fondo y resaltar el contenido (z-index 0) -->
 		<div class="absolute inset-0 bg-black/80 z-0"></div>
 
-		<!-- Contenedor del contenido (z-index 10 para posicionarse sobre el overlay) -->
 		<div class="z-10 flex flex-col items-center text-center px-4">
-			<!-- Implementación del logo local renderizado desde la carpeta public/ -->
 			<img
 				src="/logo.jpg"
 				alt="Logo Next Level Barbershop"
 				class="w-32 md:w-40 lg:w-48 mb-6 rounded-full shadow-2xl border-2 border-[#D4AF37]/30"
 			/>
-
 			<h1
 				class="text-4xl md:text-6xl lg:text-7xl font-serif text-[#D4AF37] tracking-widest mb-3 drop-shadow-lg"
 			>
 				NEXT LEVEL
 			</h1>
-
 			<p
 				class="text-xs md:text-sm tracking-[0.4em] uppercase text-zinc-300 mb-10"
 			>
@@ -36,11 +28,14 @@ import Layout from "../layouts/Layout.astro";
 			</p>
 
 			<a
-				href="#reservas"
+				href="#servicios"
 				class="px-8 py-3 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-300 tracking-widest text-sm font-semibold backdrop-blur-sm"
 			>
-				AGENDAR CITA
+				DESCUBRE EL ARTE
 			</a>
 		</div>
 	</main>
+
+	<!-- Inyección del componente en el flujo del documento -->
+	<Services />
 </Layout>

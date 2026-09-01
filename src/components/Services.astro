@@ -1,0 +1,53 @@
+---
+// src/components/Services.astro
+const services = [
+	{
+		title: "Corte Clásico & Diseño",
+		description: "Asesoría de imagen, corte perfilado a navaja, lavado y peinado con productos de alta gama.",
+		icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10"><path stroke-linecap="round" stroke-linejoin="round" d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" /></svg>`
+	},
+	{
+		title: "Ritual de Barba",
+		description: "Toallas calientes, vapor ozono, perfilado simétrico y aplicación de aceites esenciales.",
+		icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>`
+	},
+	{
+		title: "Cuidado Facial Premium",
+		description: "Exfoliación profunda, mascarilla purificante y masaje facial relajante para caballeros.",
+		icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09l2.846.813-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>`
+	}
+];
+---
+
+<section id="servicios" class="py-24 bg-zinc-950 text-zinc-50 border-t border-zinc-900">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		
+		<div class="text-center mb-16">
+			<h2 class="text-3xl md:text-5xl font-serif text-[#D4AF37] tracking-widest mb-4">
+				NUESTROS SERVICIOS
+			</h2>
+			<p class="text-zinc-400 max-w-2xl mx-auto uppercase tracking-widest text-xs md:text-sm">
+				El arte de la barbería tradicional fusionado con técnicas vanguardistas.
+			</p>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+			{services.map((service) => (
+				<div class="p-8 border border-zinc-800 bg-zinc-900/50 hover:border-[#D4AF37]/50 transition-colors duration-300 group">
+					<!-- Directiva set:html aplicada al contenedor del icono vectorial -->
+					<div 
+						class="text-zinc-500 mb-6 group-hover:text-[#D4AF37] transition-colors" 
+						set:html={service.icon} 
+					/>
+					<h3 class="text-xl font-serif text-white mb-3 tracking-wide group-hover:text-[#D4AF37] transition-colors">
+						{service.title}
+					</h3>
+					<p class="text-zinc-400 text-sm leading-relaxed">
+						{service.description}
+					</p>
+				</div>
+			))}
+		</div>
+
+	</div>
+</section>
