@@ -1,0 +1,98 @@
+---
+// src/components/Footer.astro
+---
+
+<footer class="bg-zinc-950 text-zinc-400 py-16 border-t border-zinc-900">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+			<!-- Columna 1: Identidad -->
+			<div
+				class="flex flex-col items-center md:items-start text-center md:text-left"
+			>
+				<h2
+					class="text-2xl font-serif text-[#D4AF37] tracking-widest mb-4"
+				>
+					NEXT LEVEL
+				</h2>
+				<p class="text-sm tracking-wider uppercase text-zinc-500 mb-4">
+					Barbershop
+				</p>
+				<p class="text-xs text-zinc-400 leading-relaxed max-w-xs">
+					Elevando el estándar del cuidado personal masculino en un
+					ambiente de lujo y exclusividad.
+				</p>
+			</div>
+
+			<!-- Columna 2: Ubicación y Horarios -->
+			<div
+				class="flex flex-col items-center md:items-start text-center md:text-left"
+			>
+				<h3
+					class="text-zinc-50 tracking-widest uppercase text-sm font-semibold mb-4 border-b border-[#D4AF37]/30 pb-2 inline-block"
+				>
+					Ubicación y Horario
+				</h3>
+				<address class="not-italic text-sm mb-4 text-zinc-400">
+					<p>Neiva, Colombia</p>
+				</address>
+				<ul class="text-sm space-y-1 text-zinc-400">
+					<li>Lunes a Sábado: 9:00 AM - 8:00 PM</li>
+					<li>Domingos: Cerrado</li>
+				</ul>
+			</div>
+
+			<!-- Columna 3: Enlaces Oficiales -->
+			<div
+				class="flex flex-col items-center md:items-start text-center md:text-left"
+			>
+				<h3
+					class="text-zinc-50 tracking-widest uppercase text-sm font-semibold mb-4 border-b border-[#D4AF37]/30 pb-2 inline-block"
+				>
+					Redes Oficiales
+				</h3>
+				<ul class="text-sm space-y-3">
+					<li>
+						<a
+							href="https://instagram.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="hover:text-[#D4AF37] transition-colors duration-300"
+							aria-label="Visita nuestro perfil oficial de Instagram"
+						>
+							Instagram
+						</a>
+					</li>
+					<li>
+						<a
+							href="https://wa.me/"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="hover:text-[#D4AF37] transition-colors duration-300"
+							aria-label="Agenda tu cita a través de WhatsApp"
+						>
+							WhatsApp
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- Barra Inferior de Copyright -->
+		<div
+			class="pt-8 border-t border-zinc-900 text-xs text-center flex flex-col md:flex-row justify-between items-center gap-4"
+		>
+			<p>
+				&copy; <span id="copyright-year"></span> Next Level Barbershop. Todos
+				los derechos reservados.
+			</p>
+		</div>
+	</div>
+</footer>
+
+<script>
+	// Script para calcular el año dinámicamente
+	const yearElement = document.getElementById("copyright-year");
+	if (yearElement) {
+		yearElement.textContent = new Date().getFullYear().toString();
+	}
+</script>
