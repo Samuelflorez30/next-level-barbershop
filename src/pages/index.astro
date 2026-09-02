@@ -2,46 +2,72 @@
 // src/pages/index.astro
 import Layout from "../layouts/Layout.astro";
 import Services from "../components/Services.astro"; // Importación del módulo
+import Team from "../components/Team.astro"; // Profesionales
 import Testimonials from "../components/Testimonials.astro";
 import Footer from "../components/Footer.astro";
 import Reservation from "../components/Reservation.astro";
+import Navbar from "../components/Navbar.astro"; // Adding navbar as well since it was built previously
 ---
 
 <Layout title="Next Level Barbershop | Inicio">
+	<Navbar />
 	<main
-		class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[url('https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center"
+		id="inicio"
+		class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[url('../public/oswar.jpg')] bg-cover bg-center"
 	>
 		<div class="absolute inset-0 bg-black/80 z-0"></div>
 
-		<div class="z-10 flex flex-col items-center text-center px-4">
-			<img
-				src="/logo.jpg"
-				alt="Logo Next Level Barbershop"
-				class="w-32 md:w-40 lg:w-48 mb-6 rounded-full shadow-2xl border-2 border-[#D4AF37]/30"
-			/>
-			<h1
-				class="text-4xl md:text-6xl lg:text-7xl font-serif text-[#D4AF37] tracking-widest mb-3 drop-shadow-lg"
-			>
-				NEXT LEVEL
-			</h1>
-			<p
-				class="text-xs md:text-sm tracking-[0.4em] uppercase text-zinc-300 mb-10"
-			>
-				La experiencia más exclusiva de Neiva
-			</p>
+		<div
+			class="z-10 flex flex-col items-center text-center px-4 mt-12 md:mt-16"
+		>
+			{/* Logo con Resplandor (Glow) para separarlo del fondo ocupado */}
+			<div class="relative mb-8 group">
+				<div
+					class="absolute inset-0 bg-[#D4AF37] rounded-full blur-[60px] opacity-30 group-hover:opacity-50 transition-opacity duration-700 pointer-events-none"
+				>
+				</div>
+				<img
+					src="/logo.jpg"
+					alt="Logo Next Level Barbershop"
+					class="relative w-44 md:w-56 lg:w-64 rounded-full shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-[#D4AF37]/30 transition-transform duration-700 hover:scale-105"
+				/>
+			</div>
 
+			{
+				/* H1 SEO-Friendly y sin redundancia (El logo ya dice Next Level) */
+			}
+
+			{/* Botón CTA Mejorado (Glassmorphism Premium) */}
 			<a
 				href="#servicios"
-				class="px-8 py-3 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-300 tracking-widest text-sm font-semibold backdrop-blur-sm"
+				class="group relative inline-flex items-center justify-center px-8 py-4 font-bold tracking-[0.2em] text-white uppercase transition-all duration-500 bg-black/40 border border-[#D4AF37]/50 rounded-full backdrop-blur-md overflow-hidden hover:bg-[#D4AF37] hover:text-black hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] hover:-translate-y-1"
 			>
-				DESCUBRE EL ARTE
+				<span
+					class="relative z-10 flex items-center gap-3 transition-colors duration-300"
+				>
+					Descubre el Arte
+					<svg
+						class="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+					</svg>
+				</span>
 			</a>
 		</div>
 	</main>
 
-	<!-- Inyección del componente en el flujo del documento -->
+	<!-- Inyección de los componentes en el flujo del documento -->
+
+	<Team />
 	<Services />
-	<Reservation />
 	<Testimonials />
+	<Reservation />
 	<Footer />
 </Layout>
