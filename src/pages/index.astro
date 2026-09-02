@@ -13,53 +13,94 @@ import Navbar from "../components/Navbar.astro"; // Adding navbar as well since 
 	<Navbar />
 	<main
 		id="inicio"
-		class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[url('../public/oswar.jpg')] bg-cover bg-center"
+		class="min-h-screen relative overflow-hidden"
 	>
-		<div class="absolute inset-0 bg-black/80 z-0"></div>
-
+		{/* Imagen de fondo */}
 		<div
-			class="z-10 flex flex-col items-center text-center px-4 mt-12 md:mt-16"
+			class="absolute inset-0 bg-[url('/preload.jpg')] bg-cover bg-center bg-fixed"
 		>
-			{/* Logo con Resplandor (Glow) para separarlo del fondo ocupado */}
-			<div class="relative mb-8 group">
+		</div>
+
+		{/* Overlay — fuerte a la izquierda para el texto, suave a la derecha para la imagen */}
+		<div
+			class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/20 z-[1]"
+		>
+		</div>
+		<div
+			class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 z-[1]"
+		>
+		</div>
+
+		{/* Contenido alineado a la izquierda */}
+		<div
+			class="relative z-10 min-h-screen flex items-end md:items-center px-6 sm:px-10 lg:px-20 pb-24 md:pb-0 pt-28"
+		>
+			<div class="max-w-lg">
+				{/* Línea dorada decorativa */}
 				<div
-					class="absolute inset-0 bg-[#D4AF37] rounded-full blur-[60px] opacity-30 group-hover:opacity-50 transition-opacity duration-700 pointer-events-none"
+					class="hero-line w-10 h-[2px] bg-[#D4AF37] mb-6"
 				>
 				</div>
-				<img
-					src="/logo.jpg"
-					alt="Logo Next Level Barbershop"
-					class="relative w-44 md:w-56 lg:w-64 rounded-full shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-[#D4AF37]/30 transition-transform duration-700 hover:scale-105"
-				/>
-			</div>
 
-			{
-				/* H1 SEO-Friendly y sin redundancia (El logo ya dice Next Level) */
-			}
-
-			{/* Botón CTA Mejorado (Glassmorphism Premium) */}
-			<a
-				href="#servicios"
-				class="group relative inline-flex items-center justify-center px-8 py-4 font-bold tracking-[0.2em] text-white uppercase transition-all duration-500 bg-black/40 border border-[#D4AF37]/50 rounded-full backdrop-blur-md overflow-hidden hover:bg-[#D4AF37] hover:text-black hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] hover:-translate-y-1"
-			>
-				<span
-					class="relative z-10 flex items-center gap-3 transition-colors duration-300"
+				{/* H1 */}
+				<h1
+					class="hero-title text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold uppercase tracking-tight leading-[0.9] mb-5"
 				>
-					Descubre el Arte
-					<svg
-						class="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
+					<span class="block text-white">Next</span>
+					<span
+						class="block bg-gradient-to-r from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] bg-clip-text text-transparent bg-[length:200%_100%] animate-[shimmer_4s_ease-in-out_infinite]"
+						>Level</span
 					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-					</svg>
-				</span>
-			</a>
+				</h1>
+
+				{/* Subtítulo */}
+				<p
+					class="hero-subtitle text-zinc-400 text-sm md:text-base tracking-[0.1em] font-light max-w-sm mb-8 leading-relaxed"
+				>
+					Donde cada corte cuenta una historia.<br />
+					<span class="text-zinc-300">Estilo, precisión y actitud.</span>
+				</p>
+
+				{/* CTAs */}
+				<div class="hero-cta flex flex-col sm:flex-row items-start gap-3">
+					<a
+						href="#reservar"
+						class="group relative inline-flex items-center justify-center px-7 py-3 text-sm font-bold tracking-[0.2em] text-black uppercase transition-all duration-500 bg-[#D4AF37] rounded-full overflow-hidden hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] hover:-translate-y-0.5"
+					>
+						<span class="relative z-10">Reservar Cita</span>
+						<div
+							class="absolute inset-0 bg-gradient-to-r from-[#F5E6A3] to-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+						>
+						</div>
+					</a>
+					<a
+						href="#servicios"
+						class="group inline-flex items-center gap-2 px-5 py-3 text-sm tracking-[0.12em] text-zinc-400 uppercase transition-all duration-500 hover:text-white"
+					>
+						Explorar
+						<svg
+							class="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1.5"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="1.5"
+								d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+						</svg>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		{/* Indicador de scroll */}
+		<div
+			class="absolute bottom-6 left-8 sm:left-10 lg:left-20 z-10 flex items-center gap-3 opacity-50"
+		>
+			<div class="w-[1px] h-10 bg-gradient-to-b from-[#D4AF37]/60 to-transparent animate-bounce"></div>
+			<span class="text-[0.6rem] tracking-[0.2em] uppercase text-zinc-500">Scroll</span>
 		</div>
 	</main>
 
