@@ -1,0 +1,168 @@
+---
+// src/components/Preloader.astro
+// Preloader minimalista y serio para Next Level Barbershop
+---
+
+<div id="preloader" class="preloader" aria-hidden="true">
+	<!-- Imagen de fondo sutil -->
+	<div class="preloader__bg"></div>
+
+	<!-- Logo central -->
+	<div class="preloader__center">
+		<div class="preloader__logo-wrap">
+			<img
+				src="/logo.jpg"
+				alt="Next Level Barbershop"
+				class="preloader__logo"
+				width="100"
+				height="100"
+			/>
+		</div>
+
+		<!-- Barra de progreso minimalista -->
+		<div class="preloader__bar">
+			<div class="preloader__bar-fill" id="progressBar"></div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.preloader {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #050505;
+		transition:
+			opacity 0.6s ease,
+			visibility 0.6s ease;
+	}
+
+	.preloader.is-hidden {
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	/* Fondo */
+	.preloader__bg {
+		position: absolute;
+		inset: 0;
+		background-image: url("/preload.jpg");
+		background-size: cover;
+		background-position: center;
+		opacity: 0.15;
+		filter: blur(8px) grayscale(0.5);
+	}
+
+	/* Centro */
+	.preloader__center {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2rem;
+	}
+
+	/* Logo */
+	.preloader__logo-wrap {
+		opacity: 0;
+		transform: scale(0.9);
+		animation: logoIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+	}
+
+	.preloader__logo {
+		width: 90px;
+		height: 90px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 1.5px solid rgba(212, 175, 55, 0.35);
+	}
+
+	@keyframes logoIn {
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	/* Barra de progreso */
+	.preloader__bar {
+		width: 120px;
+		height: 1px;
+		background: rgba(255, 255, 255, 0.08);
+		overflow: hidden;
+		opacity: 0;
+		animation: fadeIn 0.5s ease 0.4s forwards;
+	}
+
+	.preloader__bar-fill {
+		height: 100%;
+		width: 0%;
+		background: #d4af37;
+		transition: width 0.12s linear;
+	}
+
+	@keyframes fadeIn {
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.preloader__logo {
+			width: 72px;
+			height: 72px;
+		}
+		.preloader__bar {
+			width: 90px;
+		}
+	}
+</style>
+
+<script>
+	document.addEventListener("DOMContentLoaded", () => {
+		const bar = document.getElementById("progressBar");
+		let progress = 0;
+
+		const tick = setInterval(() => {
+			if (progress < 40) {
+				progress += Math.random() * 10;
+			} else if (progress < 80) {
+				progress += Math.random() * 6;
+			} else {
+				progress += Math.random() * 8;
+			}
+
+			if (progress >= 100) {
+				progress = 100;
+				clearInterval(tick);
+
+				setTimeout(() => {
+					const el = document.getElementById("preloader");
+					if (el) {
+						el.classList.add("is-hidden");
+						document.body.style.overflow = "";
+						setTimeout(() => el.remove(), 600);
+					}
+				}, 300);
+			}
+
+			if (bar) bar.style.width = `${progress}%`;
+		}, 70);
+
+		document.body.style.overflow = "hidden";
+	});
+
+	// Fallback
+	setTimeout(() => {
+		const el = document.getElementById("preloader");
+		if (el && !el.classList.contains("is-hidden")) {
+			el.classList.add("is-hidden");
+			document.body.style.overflow = "";
+			setTimeout(() => el.remove(), 600);
+		}
+	}, 4000);
+</script>
