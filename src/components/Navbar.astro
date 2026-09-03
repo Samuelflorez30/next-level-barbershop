@@ -66,8 +66,9 @@
       <!-- Hamburguesa (Móvil) -->
       <button
         id="mobile-menu-btn"
-        class="md:hidden relative w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+        class="md:hidden relative z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 active:bg-white/15 transition-colors touch-manipulation pointer-events-auto"
         aria-label="Abrir menú"
+        type="button"
       >
         <div class="w-4.5 flex flex-col gap-[5px] items-center justify-center">
           <span
@@ -131,6 +132,7 @@
       if (!isMenuOpen) return;
       isMenuOpen = false;
 
+      mobileBtn.setAttribute("aria-label", "Abrir menú");
       line1?.classList.remove("translate-y-[3.5px]", "rotate-45");
       line2?.classList.remove("-translate-y-[3.5px]", "-rotate-45");
 
@@ -145,10 +147,12 @@
       }, 300);
     };
 
-    mobileBtn.addEventListener("click", () => {
-      isMenuOpen = !isMenuOpen;
-
+    const toggleMenu = () => {
       if (isMenuOpen) {
+        closeMenu();
+      } else {
+        isMenuOpen = true;
+        mobileBtn.setAttribute("aria-label", "Cerrar menú");
         line1?.classList.add("translate-y-[3.5px]", "rotate-45");
         line2?.classList.add("-translate-y-[3.5px]", "-rotate-45");
 
@@ -161,14 +165,16 @@
             link.classList.add("opacity-100", "translate-y-0");
           });
         }, 100);
-      } else {
-        closeMenu();
       }
-    });
+    };
+
+    mobileBtn.addEventListener("click", toggleMenu);
 
     // Cerrar menu al hacer clic en un enlace
     mobileLinks.forEach((link) => {
-      link.addEventListener("click", closeMenu);
+      link.addEventListener("click", (e) => {
+        closeMenu();
+      });
     });
   }
 

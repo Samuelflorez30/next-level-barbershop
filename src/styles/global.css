@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* === Custom Variant: Solo dispositivos con hover (mouse/trackpad) === */
+@custom-variant hover-device (@media (hover: hover));
+
+/* === Prevenir scroll horizontal fantasma en moviles === */
+@layer base {
+	html,
+	body {
+		overflow-x: hidden;
+	}
+}
+
 /* === Hero Animations === */
 @keyframes shimmer {
 	0% {
