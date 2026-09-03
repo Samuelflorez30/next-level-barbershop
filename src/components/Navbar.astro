@@ -127,6 +127,24 @@
 
   // Menú Móvil
   if (mobileBtn && mobileMenu) {
+    const closeMenu = () => {
+      if (!isMenuOpen) return;
+      isMenuOpen = false;
+
+      line1?.classList.remove("translate-y-[3.5px]", "rotate-45");
+      line2?.classList.remove("-translate-y-[3.5px]", "-rotate-45");
+
+      mobileLinks.forEach((link) => {
+        link.classList.remove("opacity-100", "translate-y-0");
+        link.classList.add("opacity-0", "translate-y-3");
+      });
+
+      setTimeout(() => {
+        mobileMenu.classList.remove("grid-rows-[1fr]");
+        mobileMenu.classList.add("grid-rows-[0fr]");
+      }, 300);
+    };
+
     mobileBtn.addEventListener("click", () => {
       isMenuOpen = !isMenuOpen;
 
@@ -144,19 +162,13 @@
           });
         }, 100);
       } else {
-        line1?.classList.remove("translate-y-[3.5px]", "rotate-45");
-        line2?.classList.remove("-translate-y-[3.5px]", "-rotate-45");
-
-        mobileLinks.forEach((link) => {
-          link.classList.remove("opacity-100", "translate-y-0");
-          link.classList.add("opacity-0", "translate-y-3");
-        });
-
-        setTimeout(() => {
-          mobileMenu.classList.remove("grid-rows-[1fr]");
-          mobileMenu.classList.add("grid-rows-[0fr]");
-        }, 300);
+        closeMenu();
       }
+    });
+
+    // Cerrar menu al hacer clic en un enlace
+    mobileLinks.forEach((link) => {
+      link.addEventListener("click", closeMenu);
     });
   }
 
