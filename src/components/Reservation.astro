@@ -2,44 +2,98 @@
 // src/components/Reservation.astro
 ---
 
-<section id="reservar" class="py-24 bg-[#0a0a0a]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-white/10">
-      
-      <!-- Columna Gráfica (Izquierda) -->
-      <div 
-        class="relative min-h-[300px] md:min-h-full bg-cover bg-center bg-no-repeat bg-[#0a0a0a]"
-        style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80');"
-        aria-hidden="true"
-      >
-        <!-- Filtro de superposición para mantener la elegancia y contraste -->
-        <div class="absolute inset-0 bg-black/60 mix-blend-multiply"></div>
-        <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0a0a0a]/90 to-transparent"></div>
+<section id="reservar" class="w-full">
+  <div class="w-full grid grid-cols-1 lg:grid-cols-2">
+    <!-- Columna Izquierda (Mapa Oscuro) -->
+    <div class="relative w-full h-full min-h-[400px]">
+      <iframe
+        src="https://maps.google.com/maps?q=Centro%20Comercial%20Santa%20Lucia%20Plaza,%20Neiva,%20Huila&t=&z=16&ie=UTF8&iwloc=&output=embed"
+        class="absolute inset-0 w-full h-full border-0"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Ubicación en Centro Comercial Santa Lucía Plaza"></iframe>
+    </div>
+
+    <!-- Columna Derecha (Background + Overlay + CTA) -->
+    <div
+      class="relative flex flex-col justify-center p-12 lg:p-24 bg-[url('/Interno.jpg')] bg-cover bg-center"
+    >
+      <!-- Overlay -->
+      <div class="absolute inset-0 bg-gradient-to-r from-black/90 to-black/70">
       </div>
 
-      <!-- Columna de Conversión (Derecha) -->
-      <div class="flex flex-col justify-center p-10 md:p-16 lg:p-24 bg-zinc-950/80 backdrop-blur-sm">
-        <h2 class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold tracking-widest text-[#D4AF37] uppercase mb-6">
-          Reserva tu espacio
+      <!-- Contenido -->
+      <div class="relative z-10 flex flex-col items-start">
+        <h2
+          class="text-3xl md:text-5xl font-serif font-bold text-[#D4AF37] tracking-widest uppercase mb-6"
+        >
+          RESERVA TU ESPACIO
         </h2>
-        
-        <p class="text-base md:text-lg text-zinc-300 leading-relaxed mb-10">
-          Experimenta el verdadero lujo del cuidado masculino. Nuestra atención personalizada garantiza que cada corte y arreglo de barba sea ejecutado con precisión milimétrica y productos de la más alta gama. Asegura tu lugar de manera inmediata y sin complicaciones.
-        </p>
-        
-        <div class="flex flex-col sm:flex-row items-start">
-          <a 
-            href="https://wa.me/573000000000?text=Hola%2C%20deseo%20agendar%20una%20cita%20en%20Next%20Level"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-block w-full sm:w-auto text-center px-10 py-4 text-sm font-bold tracking-widest text-black uppercase transition-all duration-300 rounded-lg bg-[#D4AF37] hover:bg-[#F3C53F] hover:scale-105 hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
-            role="button"
-          >
-            Agendar Cita
-          </a>
-        </div>
-      </div>
 
+        <!-- Bloque de Horarios -->
+        <div class="flex items-start gap-3 mb-6 text-zinc-300">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6 text-[#D4AF37] shrink-0"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+          </svg>
+          <div class="flex flex-col">
+            <span
+              class="font-bold text-white uppercase text-sm tracking-widest mb-1"
+              >Horario de Atención</span
+            >
+            <p class="text-zinc-400 text-sm tracking-wide">
+              Lunes a Viernes: 9:00 AM - 9:00 PM<br />
+              Sábados, Domingos y Festivos: 9:00 AM - 9:00 PM
+            </p>
+          </div>
+        </div>
+        <!-- Bloque de Dirección Exacta -->
+        <div
+          class="flex items-center gap-3 mb-8 text-zinc-400 text-sm tracking-wide"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-5 h-5 text-[#D4AF37] shrink-0"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+            ></path>
+          </svg>
+          <address class="not-italic">
+            Calle 8 # 48-117, Segundo piso Local N2-12 en el centro comercial
+            Santa Lucía Plaza Neiva, Huila.
+          </address>
+        </div>
+
+        <a
+          href="https://wa.me/573000000000?text=Hola%2C%20deseo%20agendar%20una%20cita"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block px-10 py-4 bg-[#D4AF37] text-black font-bold tracking-widest uppercase rounded-sm transition-colors duration-300 hover:bg-white"
+        >
+          Agendar Cita
+        </a>
+      </div>
     </div>
   </div>
 </section>
