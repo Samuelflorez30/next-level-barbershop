@@ -11,17 +11,16 @@ import Navbar from "../components/Navbar.astro"; // Adding navbar as well since 
 
 <Layout title="Next Level Barbershop | Inicio">
 	<Navbar />
-	<main
-		id="inicio"
-		class="min-h-screen relative overflow-hidden"
-	>
+	<main id="inicio" class="min-h-screen relative overflow-hidden">
 		{/* Imagen de fondo */}
 		<div
-			class="absolute inset-0 bg-[url('/preload.jpg')] bg-cover bg-center bg-fixed"
+			class="absolute inset-0 bg-[url('/ImagenPrincipal.jpg')] bg-cover bg-center bg-fixed"
 		>
 		</div>
 
-		{/* Overlay — fuerte a la izquierda para el texto, suave a la derecha para la imagen */}
+		{
+			/* Overlay — fuerte a la izquierda para el texto, suave a la derecha para la imagen */
+		}
 		<div
 			class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/20 z-[1]"
 		>
@@ -37,10 +36,7 @@ import Navbar from "../components/Navbar.astro"; // Adding navbar as well since 
 		>
 			<div class="max-w-lg">
 				{/* Línea dorada decorativa */}
-				<div
-					class="hero-line w-10 h-[2px] bg-[#D4AF37] mb-6"
-				>
-				</div>
+				<div class="hero-line w-10 h-[2px] bg-[#D4AF37] mb-6"></div>
 
 				{/* H1 */}
 				<h1
@@ -58,11 +54,15 @@ import Navbar from "../components/Navbar.astro"; // Adding navbar as well since 
 					class="hero-subtitle text-zinc-400 text-sm md:text-base tracking-[0.1em] font-light max-w-sm mb-8 leading-relaxed"
 				>
 					Donde cada corte cuenta una historia.<br />
-					<span class="text-zinc-300">Estilo, precisión y actitud.</span>
+					<span class="text-zinc-300"
+						>Estilo, precisión y actitud.</span
+					>
 				</p>
 
 				{/* CTAs */}
-				<div class="hero-cta flex flex-col sm:flex-row items-start gap-3">
+				<div
+					class="hero-cta flex flex-col sm:flex-row items-start gap-3"
+				>
 					<a
 						href="#reservar"
 						class="group relative inline-flex items-center justify-center px-7 py-3 text-sm font-bold tracking-[0.2em] text-black uppercase transition-all duration-500 bg-[#D4AF37] rounded-full overflow-hidden hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] hover:-translate-y-0.5"
@@ -99,8 +99,10 @@ import Navbar from "../components/Navbar.astro"; // Adding navbar as well since 
 		<div
 			class="absolute bottom-6 left-8 sm:left-10 lg:left-20 z-10 flex items-center gap-3 opacity-50"
 		>
-			<div class="w-[1px] h-10 bg-gradient-to-b from-[#D4AF37]/60 to-transparent animate-bounce"></div>
-			<span class="text-[0.6rem] tracking-[0.2em] uppercase text-zinc-500">Scroll</span>
+			<div
+				class="w-[1px] h-10 bg-gradient-to-b from-[#D4AF37]/60 to-transparent animate-bounce"
+			>
+			</div>
 		</div>
 	</main>
 

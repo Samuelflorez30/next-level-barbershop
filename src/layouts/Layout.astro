@@ -3,6 +3,7 @@
 // Este bloque de frontmatter (código entre los guiones) se ejecuta en el servidor (SSG) durante el build.
 import "../styles/global.css";
 import Navbar from "../components/Navbar.astro";
+import Preloader from "../components/Preloader.astro";
 
 interface Props {
     title: string;
@@ -27,6 +28,7 @@ const { title } = Astro.props;
     <body
         class="bg-[#0a0a0a] text-zinc-50 antialiased selection:bg-[#D4AF37] selection:text-black"
     >
+        <Preloader />
         <Navbar />
         <!-- El <slot /> funciona como un inyector (placeholder) para el contenido de las páginas hijas -->
         <slot />
