@@ -275,98 +275,300 @@ const products = [
 				</div>
 
 				<!-- Columna Derecha (Curriculum y Conversión) -->
-				<div class="flex flex-col justify-center">
+				<div class="flex flex-col justify-between">
 					<!-- Encabezados -->
-					<h3
-						class="text-3xl md:text-5xl font-serif font-bold text-[#D4AF37] tracking-widest uppercase mb-2"
-					>
-						NEXT LEVEL ACADEMY
-					</h3>
-					<p
-						class="text-zinc-300 text-sm uppercase tracking-widest mb-8"
-					>
-						Formacion Profesional en Barberia
-					</p>
-
-					<!-- Detalles del Curso -->
-					<div class="border-l-2 border-[#D4AF37] pl-6 mb-8">
-						<h4
-							class="text-xl font-bold text-white tracking-wider uppercase mb-2"
+					<div class="mb-8">
+						<h3
+							class="text-3xl md:text-5xl font-serif font-bold text-[#D4AF37] tracking-widest uppercase mb-2"
 						>
-							NIVEL 1 -- BARBERIA BASICA
-						</h4>
-						<p class="text-zinc-400 text-sm tracking-wide mb-3">
-							Duracion: 4 semanas / 8 clases | 2 clases por
-							semana, 3h c/u
-						</p>
-						<p class="text-zinc-300 text-sm leading-relaxed">
-							Aprende desde cero hasta dominar el corte masculino
-							perfecto.
+							NEXT LEVEL ACADEMY
+						</h3>
+						<p
+							class="text-zinc-300 text-sm uppercase tracking-widest"
+						>
+							Formacion Profesional en Barberia
 						</p>
 					</div>
 
-					<!-- Módulos -->
-					<ul class="space-y-4 mb-8">
-						<li class="flex items-start gap-3">
-							<span class="mt-1.5 w-2 h-2 bg-[#D4AF37] shrink-0"
-							></span>
-							<div>
-								<span class="text-white font-bold text-sm"
-									>Modulo 1:</span
+					<!-- Acordeones del Curriculo -->
+					<div class="flex flex-col gap-4 mb-10">
+						<!-- NIVEL 1 -->
+						<details
+							class="group border-b border-zinc-800 pb-4"
+							open
+						>
+							<summary
+								class="flex justify-between items-center cursor-pointer font-serif text-lg text-zinc-200 hover:text-[#D4AF37] transition-colors list-none"
+							>
+								<span>NIVEL 1 -- Barberia Basica</span>
+								<svg
+									class="w-5 h-5 text-[#D4AF37] shrink-0 group-open:rotate-180 transition-transform duration-300"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="2"
+									stroke="currentColor"
 								>
-								<span class="text-zinc-400 text-sm">
-									Introduccion, herramientas y atencion al
-									cliente.</span
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+								</svg>
+							</summary>
+							<div class="mt-4 text-sm text-zinc-400">
+								<p class="mb-3">
+									<span class="text-zinc-200 font-semibold"
+										>Duracion:</span
+									> 4 semanas / 8 clases | 2 clases por semana,
+									3h c/u
+								</p>
+								<p class="mb-4">
+									<span class="text-zinc-200 font-semibold"
+										>Objetivo:</span
+									> Desde cero hasta el corte masculino correcto.
+								</p>
+								<ul
+									class="pl-4 border-l border-zinc-800 space-y-2 mb-4"
 								>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Introduccion, herramientas y atencion
+										al cliente
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Fundamentos del corte, guias y fade
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Cortes basicos, maquina y manejo de
+										tijera
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Barba, simetria y diseño con navaja
+									</li>
+								</ul>
+								<p class="italic text-zinc-500 text-xs">
+									Evaluacion: Protocolo de corte completo Next
+									Level.
+								</p>
 							</div>
-						</li>
-						<li class="flex items-start gap-3">
-							<span class="mt-1.5 w-2 h-2 bg-[#D4AF37] shrink-0"
-							></span>
-							<div>
-								<span class="text-white font-bold text-sm"
-									>Modulo 2:</span
-								>
-								<span class="text-zinc-400 text-sm">
-									Fundamentos del corte, guias y fade.</span
-								>
-							</div>
-						</li>
-						<li class="flex items-start gap-3">
-							<span class="mt-1.5 w-2 h-2 bg-[#D4AF37] shrink-0"
-							></span>
-							<div>
-								<span class="text-white font-bold text-sm"
-									>Modulo 3:</span
-								>
-								<span class="text-zinc-400 text-sm">
-									Cortes basicos, maquina y manejo de tijera.</span
-								>
-							</div>
-						</li>
-						<li class="flex items-start gap-3">
-							<span class="mt-1.5 w-2 h-2 bg-[#D4AF37] shrink-0"
-							></span>
-							<div>
-								<span class="text-white font-bold text-sm"
-									>Modulo 4:</span
-								>
-								<span class="text-zinc-400 text-sm">
-									Barba, simetria y diseno con navaja.</span
-								>
-							</div>
-						</li>
-					</ul>
+						</details>
 
-					<!-- Cierre Académico -->
-					<p
-						class="text-zinc-300 text-sm italic mb-10 border-t border-white/10 pt-6"
-					>
-						Evaluacion practica: Protocolo de corte completo Next
-						Level.
-					</p>
+						<!-- NIVEL 2 -->
+						<details class="group border-b border-zinc-800 pb-4">
+							<summary
+								class="flex justify-between items-center cursor-pointer font-serif text-lg text-zinc-200 hover:text-[#D4AF37] transition-colors list-none"
+							>
+								<span>NIVEL 2 -- Barberia Intermedia</span>
+								<svg
+									class="w-5 h-5 text-[#D4AF37] shrink-0 group-open:rotate-180 transition-transform duration-300"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="2"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+								</svg>
+							</summary>
+							<div class="mt-4 text-sm text-zinc-400">
+								<p class="mb-3">
+									<span class="text-zinc-200 font-semibold"
+										>Duracion:</span
+									> 6 semanas / 12 clases | 2 clases por semana,
+									3h c/u
+								</p>
+								<p class="mb-4">
+									<span class="text-zinc-200 font-semibold"
+										>Objetivo:</span
+									> Diseñar un corte segun el cliente.
+								</p>
+								<ul
+									class="pl-4 border-l border-zinc-800 space-y-2 mb-4"
+								>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Dominio del fade
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Estructura y formas de cabeza
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Tecnica de tijera avanzada
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Diseños Freestyle
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Barba profesional
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Experiencia del cliente
+									</li>
+								</ul>
+								<p class="italic text-zinc-500 text-xs">
+									Evaluacion: Corte + barba + diagnostico.
+								</p>
+							</div>
+						</details>
 
-					<!-- CTA Inscripción -->
+						<!-- NIVEL 3 -->
+						<details class="group border-b border-zinc-800 pb-4">
+							<summary
+								class="flex justify-between items-center cursor-pointer font-serif text-lg text-zinc-200 hover:text-[#D4AF37] transition-colors list-none"
+							>
+								<span>NIVEL 3 -- Barberia Avanzada</span>
+								<svg
+									class="w-5 h-5 text-[#D4AF37] shrink-0 group-open:rotate-180 transition-transform duration-300"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="2"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+								</svg>
+							</summary>
+							<div class="mt-4 text-sm text-zinc-400">
+								<p class="mb-3">
+									<span class="text-zinc-200 font-semibold"
+										>Duracion:</span
+									> 8 semanas / 16 clases | 2 clases por semana,
+									3h c/u
+								</p>
+								<p class="mb-4">
+									<span class="text-zinc-200 font-semibold"
+										>Objetivo:</span
+									> Formar un profesional capaz de crear identidad
+									propia.
+								</p>
+								<ul
+									class="pl-4 border-l border-zinc-800 space-y-2 mb-4"
+								>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Ingenieria del corte
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Cortes avanzados: Burst, Drop, Mullet
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Colorimetria
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Tricologia aplicada
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Imagen y marca personal
+									</li>
+									<li>
+										<span class="text-[#D4AF37] mr-2"
+											>--</span
+										>Barberia empresarial
+									</li>
+								</ul>
+								<p class="italic text-zinc-500 text-xs">
+									Evaluacion: Transformacion de modelo +
+									fotografia.
+								</p>
+							</div>
+						</details>
+
+						<!-- CERTIFICACIÓN -->
+						<details
+							class="group border-b border-[#D4AF37]/30 pb-4"
+						>
+							<summary
+								class="flex justify-between items-center cursor-pointer font-serif text-lg text-[#D4AF37] hover:text-white transition-colors list-none"
+							>
+								<span>Certificacion Next Level Master</span>
+								<svg
+									class="w-5 h-5 text-[#D4AF37] shrink-0 group-open:rotate-180 transition-transform duration-300"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="2"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+								</svg>
+							</summary>
+							<div class="mt-4 text-sm text-zinc-400">
+								<p class="mb-4">
+									Al completar cada nivel recibiras tu diploma
+									oficial:
+								</p>
+								<ul
+									class="pl-4 border-l border-[#D4AF37]/30 space-y-3"
+								>
+									<li class="flex items-center gap-2">
+										<span
+											class="w-1.5 h-1.5 bg-zinc-500 shrink-0"
+										></span>
+										<span>Next Level Barber Basico</span>
+									</li>
+									<li class="flex items-center gap-2">
+										<span
+											class="w-1.5 h-1.5 bg-zinc-400 shrink-0"
+										></span>
+										<span>Next Level Barber Intermedio</span
+										>
+									</li>
+									<li class="flex items-center gap-2">
+										<span
+											class="w-1.5 h-1.5 bg-zinc-300 shrink-0"
+										></span>
+										<span>Next Level Barber Avanzado</span>
+									</li>
+									<li class="flex items-center gap-2">
+										<span
+											class="w-2 h-2 bg-[#D4AF37] shrink-0"
+										></span>
+										<span class="text-[#D4AF37] font-bold"
+											>Next Level Master Barber</span
+										>
+									</li>
+								</ul>
+								<p class="mt-4 italic text-zinc-500 text-xs">
+									Galardón maximo otorgado al completar la
+									ruta entera.
+								</p>
+							</div>
+						</details>
+					</div>
+
+					<!-- CTA Inscripción (Persistente) -->
 					<a
 						href="https://wa.me/573142915681?text=Hola,%20deseo%20inscribirme%20en%20Next%20Level%20Academy"
 						target="_blank"
