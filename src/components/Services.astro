@@ -67,30 +67,51 @@ const servicios = [
 	},
 ];
 
-const productos = [
+const products = [
 	{
-		title: "Cera Importada Alta Calidad",
-		price: "$45.000",
-		desc: "Fijación perfecta y sostenida con acabado mate o brillante según tu estilo preferido.",
-		image: "",
+		name: "Curl Cream",
+		desc: "Crema especializada para definir e hidratar rizos, controlando el frizz sin usar alcohol ni parabenos.",
+		image: "/CurlCream.jpeg",
 	},
 	{
-		title: "Polvo de Textura",
-		price: "$45.000",
-		desc: "Aporta volumen y textura instantánea al cabello fino con un acabado 100% natural y mate.",
-		image: "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&w=800&q=80",
+		name: "Hair Molding Cream",
+		desc: "Crema moldeadora capilar de fijación extra fuerte, ideal para esculpir y dar forma con un acabado profesional.",
+		image: "/HearMolding.jpeg",
 	},
 	{
-		title: "Shampoo Anticaída/Anticaspa",
-		price: "$40.000",
-		desc: "Cuidado profesional para mantener tu cuero cabelludo sano, libre de escamas y fortalecido.",
-		image: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80",
+		name: "Hair Gel",
+		desc: "Gel fijador con extractos botánicos que cuida, nutre y fortalece el cabello con efecto prolongado de 24 horas.",
+		image: "/HairGel.jpeg",
 	},
 	{
-		title: "Crema para Rizos",
-		price: "$45.000",
-		desc: "Define, hidrata y controla el frizz de tus rizos durante todo el día sin dejar residuos.",
-		image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=800&q=80",
+		name: "Minoxidil 5%",
+		desc: "Tratamiento tópico clínicamente comprobado para la regeneración y estimulación del crecimiento capilar masculino.",
+		image: "/Minoxidil.jpeg",
+	},
+	{
+		name: "Kemei Shaver",
+		desc: "Afeitadora eléctrica profesional inalámbrica de alta velocidad, perfecta para acabados al ras y desvanecidos limpios.",
+		image: "/Kemei.jpeg",
+	},
+	{
+		name: "Massage Gun",
+		desc: "Pistola de masaje muscular con función de compresa fría/caliente y múltiples cabezales para relajación profunda.",
+		image: "/Masages.jpeg",
+	},
+	{
+		name: "Texturizador",
+		desc: "Polvo texturizador de fijación ligera para dar volumen y un estilo natural sin apelmazar el cabello.",
+		image: "/Texturizador.jpeg",
+	},
+	{
+		name: "Cera Mate Dubai",
+		desc: "Cera cremosa mate para un peinado estructurado sin brillo artificial, garantizando un look elegante.",
+		image: "/Cera.jpeg",
+	},
+	{
+		name: "Thermo Protector",
+		desc: "Spray para peinar con protección térmica, ideal para preparar el cabello antes del uso de herramientas de calor.",
+		image: "/SprayPeinar.jpeg",
 	},
 ];
 
@@ -210,49 +231,40 @@ const experiencia = [
 			id="tab-productos"
 			class="tab-content hidden transition-opacity duration-500 opacity-0"
 		>
-			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 				{
-					productos.map((item) => (
-						<div class="group cursor-pointer flex flex-col">
-							{/* Contenedor de la Imagen del Producto */}
-							<div class="relative w-full aspect-square bg-zinc-900 rounded-2xl overflow-hidden mb-6 border border-white/5 group-hover:border-[#D4AF37]/50 transition-colors duration-500 shadow-lg">
+					products.map((product) => (
+						<article class="group bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/50 hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+							{/* Imagen del Producto */}
+							<div class="aspect-square overflow-hidden bg-zinc-800">
 								<img
-									src={item.image}
-									alt={item.title}
-									class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+									src={product.image}
+									alt={product.name}
+									class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
 									loading="lazy"
 								/>
-								{/* Overlay oscuro que aparece en Hover */}
-								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-								{/* Botón Flotante Reveal */}
-								<div class="absolute bottom-6 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 w-full px-6">
-									<div class="bg-[#D4AF37] text-black text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-full text-center hover:bg-white transition-colors">
-										Ver Detalles
-									</div>
-								</div>
 							</div>
 
-							{/* Textos del Producto (Centrados) */}
-							<div class="text-center px-2 flex-1 flex flex-col">
-								<h3 class="text-lg font-serif font-bold text-white group-hover:text-[#D4AF37] transition-colors mb-2">
-									{item.title}
+							{/* Contenido */}
+							<div class="p-6 flex-1 flex flex-col">
+								<h3 class="text-lg font-bold text-white group-hover:text-[#D4AF37] transition-colors mb-2">
+									{product.name}
 								</h3>
-								<p class="text-zinc-500 text-sm mb-4 line-clamp-2">
-									{item.desc}
+								<p class="text-zinc-400 text-sm leading-relaxed mb-6 flex-1">
+									{product.desc}
 								</p>
 
-								{/* Precio con barra animada */}
-								<div class="mt-auto flex justify-center">
-									<div class="relative pb-1">
-										<span class="text-[#D4AF37] font-black text-lg tracking-wider">
-											{item.price}
-										</span>
-										<div class="absolute bottom-0 left-1/2 -translate-x-1/2 h-[1px] w-6 bg-white/20 group-hover:w-full group-hover:bg-[#D4AF37] transition-all duration-500" />
-									</div>
-								</div>
+								{/* Botón WhatsApp Dinámico */}
+								<a
+									href={`https://wa.me/573000000000?text=Hola,%20deseo%20comprar%20el%20producto:%20${encodeURIComponent(product.name)}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="w-full block text-center px-6 py-3 bg-[#D4AF37] text-black font-bold text-sm tracking-widest uppercase rounded-sm transition-colors duration-300 hover:bg-white"
+								>
+									COMPRAR
+								</a>
 							</div>
-						</div>
+						</article>
 					))
 				}
 			</div>
