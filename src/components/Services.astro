@@ -1,6 +1,13 @@
 ---
 // src/components/Services.astro
 
+const barbers = [
+	{ id: 'oswar', name: 'Oswar Avendaño', phone: '573142915681', image: '/oswar2.jpg' },
+	{ id: 'stiven', name: 'Stiven Tapia', phone: '573142915681', image: '/harolportada.jpg' },
+	{ id: 'montoya', name: 'Jesus Montoya', phone: '573142915681', image: '/JesusMontoya.jpeg' },
+	{ id: 'toro', name: 'Jesus Toro', phone: '573142915681', image: '/JesusToro.jpeg' }
+];
+
 const servicios = [
 	{
 		title: "Corte Básico",
@@ -192,9 +199,16 @@ const products = [
 										{item.price}
 									</span>
 								</div>
-								<p class="text-zinc-400 text-sm leading-relaxed mt-auto">
+								<p class="text-zinc-400 text-sm leading-relaxed mt-auto mb-4">
 									{item.desc}
 								</p>
+								<button
+									type="button"
+									class="btn-book-service w-full py-2.5 border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black font-bold text-sm tracking-widest uppercase rounded-sm transition-colors duration-300"
+									data-service-name={item.title}
+								>
+									AGENDAR
+								</button>
 							</div>
 						</div>
 					))
@@ -581,6 +595,51 @@ const products = [
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal de Selección de Profesional -->
+	<div id="barber-modal" class="fixed inset-0 z-[60] hidden opacity-0 transition-opacity duration-300">
+		<!-- Fondo oscuro -->
+		<div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="barber-modal-overlay"></div>
+		
+		<!-- Contenedor central -->
+		<div class="relative bg-zinc-900 border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-[90%] mx-auto mt-[15vh] md:mt-[20vh] shadow-2xl flex flex-col">
+			<!-- Botón de cierre -->
+			<button id="close-modal-btn" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors" aria-label="Cerrar modal" type="button">
+				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<h3 class="text-xl md:text-2xl font-serif font-bold text-[#D4AF37] text-center uppercase mb-1">
+				SELECCIONA TU PROFESIONAL
+			</h3>
+			<p id="modal-service-name" class="text-zinc-400 text-sm text-center mb-6">
+				Servicio seleccionado
+			</p>
+
+			<div class="flex flex-col gap-3">
+				{
+					barbers.map((barber) => (
+						<a
+							href="#"
+							id={`barber-link-${barber.id}`}
+							data-phone={barber.phone}
+							class="barber-link group flex items-center gap-4 w-full border border-white/10 hover:border-[#D4AF37] bg-zinc-950 p-3 rounded-xl transition-all"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-white/10 group-hover:border-[#D4AF37] transition-colors">
+								<img src={barber.image} alt={barber.name} class="w-full h-full object-cover" loading="lazy" />
+							</div>
+							<span class="text-white group-hover:text-[#D4AF37] font-bold tracking-wide transition-colors">
+								{barber.name}
+							</span>
+						</a>
+					))
+				}
+			</div>
+		</div>
+	</div>
 </section>
 
 <style>
@@ -598,6 +657,51 @@ const products = [
 	// Script para manejar la lógica de pestañas (Tabs)
 	const tabBtns = document.querySelectorAll(".tab-btn");
 	const tabContents = document.querySelectorAll(".tab-content");
+
+	// Lógica del Modal
+	const modal = document.getElementById("barber-modal");
+	const modalOverlay = document.getElementById("barber-modal-overlay");
+	const closeModalBtn = document.getElementById("close-modal-btn");
+	const modalServiceName = document.getElementById("modal-service-name");
+	const bookBtns = document.querySelectorAll(".btn-book-service");
+	const barberLinks = document.querySelectorAll(".barber-link");
+
+	const openModal = (serviceName) => {
+		if (!modal) return;
+		
+		modalServiceName.textContent = `Servicio: ${serviceName}`;
+		
+		barberLinks.forEach(link => {
+			const phone = link.getAttribute("data-phone");
+			const message = `Hola, deseo agendar el servicio de ${serviceName} contigo.`;
+			link.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+		});
+
+		modal.classList.remove("hidden");
+		// Reflow
+		void modal.offsetWidth;
+		modal.classList.remove("opacity-0");
+		modal.classList.add("opacity-100");
+	};
+
+	const closeModal = () => {
+		if (!modal) return;
+		modal.classList.remove("opacity-100");
+		modal.classList.add("opacity-0");
+		setTimeout(() => {
+			modal.classList.add("hidden");
+		}, 300);
+	};
+
+	bookBtns.forEach(btn => {
+		btn.addEventListener("click", (e) => {
+			const serviceName = e.currentTarget.getAttribute("data-service-name");
+			openModal(serviceName);
+		});
+	});
+
+	closeModalBtn?.addEventListener("click", closeModal);
+	modalOverlay?.addEventListener("click", closeModal);
 
 	tabBtns.forEach((btn) => {
 		btn.addEventListener("click", () => {
