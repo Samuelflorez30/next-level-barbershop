@@ -16,13 +16,80 @@ const { title } = Astro.props;
 <html lang="es">
     <head>
         <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
             name="description"
-            content="Next Level Barbershop - La experiencia de barbería más exclusiva de Neiva."
+            content="Next Level Barbershop — La barberia mas exclusiva de Neiva, Huila. Cortes premium, barba profesional, colorimetria y academia de barberia en el CC Santa Lucia Plaza. Reserva tu cita ahora."
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="author" content="Next Level Barbershop" />
+        <meta name="theme-color" content="#0a0a0a" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="canonical" href="https://nextlevelbarbershop.com/" />
         <title>{title}</title>
+
+        <!-- Open Graph / Facebook / WhatsApp -->
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="es_CO" />
+        <meta property="og:url" content="https://nextlevelbarbershop.com/" />
+        <meta property="og:title" content="Next Level Barbershop | La Mejor Barberia de Neiva" />
+        <meta property="og:description" content="Cortes premium, barba profesional, colorimetria y academia de barberia. Vive la experiencia VIP en el CC Santa Lucia Plaza, Neiva." />
+        <meta property="og:image" content="https://nextlevelbarbershop.com/ImagenPrincipal.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Next Level Barbershop" />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Next Level Barbershop | La Mejor Barberia de Neiva" />
+        <meta name="twitter:description" content="Cortes premium, barba profesional, colorimetria y academia de barberia. Reserva tu cita en Neiva, Huila." />
+        <meta name="twitter:image" content="https://nextlevelbarbershop.com/ImagenPrincipal.jpg" />
+
+        <!-- Datos Estructurados JSON-LD (Schema.org HairSalon) -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "HairSalon",
+            "name": "Next Level Barbershop",
+            "description": "La barberia mas exclusiva de Neiva. Cortes premium, barba profesional, colorimetria, productos de alta gama y academia de barberia.",
+            "url": "https://nextlevelbarbershop.com",
+            "telephone": "+573142915681",
+            "image": "https://nextlevelbarbershop.com/ImagenPrincipal.jpg",
+            "priceRange": "$$",
+            "currenciesAccepted": "COP",
+            "paymentAccepted": "Cash, Nequi, Daviplata",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Calle 8 #48-117, Local H2-12, CC Santa Lucia Plaza",
+                "addressLocality": "Neiva",
+                "addressRegion": "Huila",
+                "postalCode": "410010",
+                "addressCountry": "CO"
+            },
+            "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 2.9224,
+                "longitude": -75.2891
+            },
+            "openingHoursSpecification": [
+                {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    "opens": "09:00",
+                    "closes": "21:00"
+                },
+                {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Saturday", "Sunday"],
+                    "opens": "09:00",
+                    "closes": "21:00"
+                }
+            ],
+            "sameAs": [
+                "https://www.instagram.com/next_level_barbershop1/",
+                "https://wa.me/573142915681"
+            ]
+        }
+        </script>
     </head>
     <!-- antialiased suaviza el renderizado de las fuentes, crucial para interfaces de lujo -->
     <body
