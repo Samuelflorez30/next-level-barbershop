@@ -2,10 +2,30 @@
 // src/components/Services.astro
 
 const barbers = [
-	{ id: 'oswar', name: 'Oswar Avendaño', phone: '573142915681', image: '/oswar2.jpg' },
-	{ id: 'stiven', name: 'Stiven Tapia', phone: '573142915681', image: '/harolportada.jpg' },
-	{ id: 'montoya', name: 'Jesus Montoya', phone: '573142915681', image: '/JesusMontoya.jpeg' },
-	{ id: 'toro', name: 'Jesus Toro', phone: '573142915681', image: '/JesusToro.jpeg' }
+	{
+		id: "oswar",
+		name: "Oswar Avendaño",
+		phone: "573142915681",
+		image: "/oswar2.jpg",
+	},
+	{
+		id: "stiven",
+		name: "Stiven Tapia",
+		phone: "573142915681",
+		image: "/harolportada.jpg",
+	},
+	{
+		id: "montoya",
+		name: "Jesus Montoya",
+		phone: "573142915681",
+		image: "/JesusMontoya.jpeg",
+	},
+	{
+		id: "toro",
+		name: "Jesus Toro",
+		phone: "573142915681",
+		image: "/JesusToro.jpeg",
+	},
 ];
 
 const servicios = [
@@ -14,63 +34,63 @@ const servicios = [
 		price: "$30.000",
 		desc: "Corte de cabello clásico o degradado con técnica impecable.",
 		isPopular: false,
-		image: "../public/Basico.jpg",
+		image: "/Basico.jpg",
 	},
 	{
 		title: "Corte Kids",
 		price: "$30.000",
 		desc: "Corte diseñado especialmente para los más pequeños, con paciencia y estilo.",
 		isPopular: false,
-		image: "../public/Kids1.jpg",
+		image: "/Kids1.jpg",
 	},
 	{
 		title: "Corte Premium",
 		price: "$40.000",
 		desc: "Incluye lavado, mascarilla, extracción de puntos negros y masajes relajantes.",
 		isPopular: true,
-		image: "../public/CortePremium.jpg",
+		image: "/CortePremium.jpg",
 	},
 	{
 		title: "Corte + Barba Básico",
 		price: "$45.000",
 		desc: "Corte impecable y perfilado de barba preciso. Incluye vaporizador.",
 		isPopular: false,
-		image: "../public/BarbaBasico.jpg",
+		image: "/BarbaBasico.jpg",
 	},
 	{
 		title: "Corte + Barba Premium",
 		price: "$50.000",
 		desc: "La experiencia definitiva. Incluye vaporizador, limpieza profunda y mascarilla.",
 		isPopular: false,
-		image: "../public/BarbaPremium.jpg",
+		image: "/BarbaPremium.jpg",
 	},
 	{
 		title: "Diseño Freestyle",
 		price: "Desde $20.000",
 		desc: "Diseños personalizados, grecas y líneas creativas ejecutadas a navaja libre.",
 		isPopular: false,
-		image: "../public/Freestyle.jpg",
+		image: "/Freestyle.jpg",
 	},
 	{
 		title: "Limpieza Facial",
 		price: "Desde $30.000",
 		desc: "Renueva tu piel con nuestra limpieza profunda, exfoliación e hidratación.",
 		isPopular: false,
-		image: "../public/LimpiezaFacial.jpg",
+		image: "/LimpiezaFacial.jpg",
 	},
 	{
 		title: "Ondulados Semi Permanentes",
 		price: "Desde $200.000",
 		desc: "Aporta textura, volumen y movimiento a tu cabello con ondas duraderas.",
 		isPopular: false,
-		image: "../public/Ondulado.jpg",
+		image: "/Ondulado.jpg",
 	},
 	{
 		title: "Colorimetría / Platinado",
 		price: "Desde $200.000",
 		desc: "Transformación radical de color utilizando productos de alta gama que protegen tu cabello.",
 		isPopular: false,
-		image: "../public/Platinado.jpg",
+		image: "/Platinado.jpg",
 	},
 ];
 
@@ -597,23 +617,51 @@ const products = [
 	</div>
 
 	<!-- Modal de Selección de Profesional -->
-	<div id="barber-modal" class="fixed inset-0 z-[60] hidden opacity-0 transition-opacity duration-300">
+	<div
+		id="barber-modal"
+		class="fixed inset-0 z-[60] hidden opacity-0 transition-opacity duration-300"
+	>
 		<!-- Fondo oscuro -->
-		<div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="barber-modal-overlay"></div>
-		
+		<div
+			class="absolute inset-0 bg-black/80 backdrop-blur-sm"
+			id="barber-modal-overlay"
+		>
+		</div>
+
 		<!-- Contenedor central -->
-		<div class="relative bg-zinc-900 border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-[90%] mx-auto mt-[15vh] md:mt-[20vh] shadow-2xl flex flex-col">
+		<div
+			class="relative bg-zinc-900 border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-[90%] mx-auto mt-[15vh] md:mt-[20vh] shadow-2xl flex flex-col"
+		>
 			<!-- Botón de cierre -->
-			<button id="close-modal-btn" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors" aria-label="Cerrar modal" type="button">
-				<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+			<button
+				id="close-modal-btn"
+				class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"
+				aria-label="Cerrar modal"
+				type="button"
+			>
+				<svg
+					class="w-6 h-6"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					stroke-width="2"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M6 18L18 6M6 6l12 12"></path>
 				</svg>
 			</button>
 
-			<h3 class="text-xl md:text-2xl font-serif font-bold text-[#D4AF37] text-center uppercase mb-1">
+			<h3
+				class="text-xl md:text-2xl font-serif font-bold text-[#D4AF37] text-center uppercase mb-1"
+			>
 				SELECCIONA TU PROFESIONAL
 			</h3>
-			<p id="modal-service-name" class="text-zinc-400 text-sm text-center mb-6">
+			<p
+				id="modal-service-name"
+				class="text-zinc-400 text-sm text-center mb-6"
+			>
 				Servicio seleccionado
 			</p>
 
@@ -629,7 +677,12 @@ const products = [
 							rel="noopener noreferrer"
 						>
 							<div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-white/10 group-hover:border-[#D4AF37] transition-colors">
-								<img src={barber.image} alt={barber.name} class="w-full h-full object-cover" loading="lazy" />
+								<img
+									src={barber.image}
+									alt={barber.name}
+									class="w-full h-full object-cover"
+									loading="lazy"
+								/>
 							</div>
 							<span class="text-white group-hover:text-[#D4AF37] font-bold tracking-wide transition-colors">
 								{barber.name}
@@ -666,24 +719,6 @@ const products = [
 	const bookBtns = document.querySelectorAll(".btn-book-service");
 	const barberLinks = document.querySelectorAll(".barber-link");
 
-	const openModal = (serviceName) => {
-		if (!modal) return;
-		
-		modalServiceName.textContent = `Servicio: ${serviceName}`;
-		
-		barberLinks.forEach(link => {
-			const phone = link.getAttribute("data-phone");
-			const message = `Hola, deseo agendar el servicio de ${serviceName} contigo.`;
-			link.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-		});
-
-		modal.classList.remove("hidden");
-		// Reflow
-		void modal.offsetWidth;
-		modal.classList.remove("opacity-0");
-		modal.classList.add("opacity-100");
-	};
-
 	const closeModal = () => {
 		if (!modal) return;
 		modal.classList.remove("opacity-100");
@@ -693,10 +728,27 @@ const products = [
 		}, 300);
 	};
 
-	bookBtns.forEach(btn => {
+	bookBtns.forEach((btn) => {
 		btn.addEventListener("click", (e) => {
-			const serviceName = e.currentTarget.getAttribute("data-service-name");
-			openModal(serviceName);
+			const target = e.currentTarget;
+			if (!(target instanceof HTMLElement)) return;
+			const serviceName = target.getAttribute("data-service-name");
+			if (!serviceName || !modal || !modalServiceName) return;
+
+			modalServiceName.textContent = `Servicio: ${serviceName}`;
+
+			barberLinks.forEach((link) => {
+				if (!(link instanceof HTMLAnchorElement)) return;
+				const phone = link.getAttribute("data-phone");
+				const message = `Hola, deseo agendar el servicio de ${serviceName} contigo.`;
+				link.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+			});
+
+			modal.classList.remove("hidden");
+			// Reflow
+			void modal.offsetWidth;
+			modal.classList.remove("opacity-0");
+			modal.classList.add("opacity-100");
 		});
 	});
 
