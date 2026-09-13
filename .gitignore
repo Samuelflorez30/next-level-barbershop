@@ -15,10 +15,20 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.*
+!.env.example
 
 # macOS-specific files
 .DS_Store
 
 # jetbrains setting folder
 .idea/
+
+# local SQLite database (dev)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# vercel
+.vercel/

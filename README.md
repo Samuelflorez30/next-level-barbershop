@@ -1,43 +1,48 @@
-# Astro Starter Kit: Minimal
+# Next Level Barbershop
+
+Sitio web y sistema de reservas de Next Level Barbershop (Neiva, Huila).
+
+- **Frontend**: Astro 7 + Tailwind CSS v4
+- **Backend**: Astro en modo servidor desplegado en Vercel
+- **Base de datos**: Turso (SQLite/libSQL) con Drizzle ORM
+
+## Primeros pasos
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+cp .env.example .env   # y completa las credenciales de Turso
+npm run db:migrate
+npm run db:seed
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+La guía completa para crear la base de datos en Turso, correr migraciones,
+cargar los datos iniciales y desplegar en Vercel está en
+[`docs/SETUP.md`](docs/SETUP.md).
 
-## 🚀 Project Structure
+## Comandos
 
-Inside of your Astro project, you'll see the following folders and files:
+| Comando               | Acción                                                  |
+| :-------------------- | :------------------------------------------------------ |
+| `npm run dev`         | Servidor de desarrollo en `localhost:4321`              |
+| `npm run build`       | Build de producción (salida para Vercel)                |
+| `npm run preview`     | Previsualiza el build localmente                        |
+| `npm run db:generate` | Genera una migración SQL a partir de `src/db/schema.ts` |
+| `npm run db:migrate`  | Aplica las migraciones pendientes                       |
+| `npm run db:push`     | Sincroniza el esquema sin migración (solo desarrollo)   |
+| `npm run db:seed`     | Carga barberos, servicios, horarios y usuarios iniciales |
+| `npm run db:studio`   | Abre Drizzle Studio                                     |
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+## Estructura
+
 ```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+src/
+├── components/   # secciones de la landing (Team, Services, Reservation…)
+├── db/           # schema.ts, client.ts, seed.ts
+├── layouts/
+├── lib/          # utilidades (password.ts)
+├── pages/
+└── styles/
+drizzle/          # migraciones SQL
+docs/SETUP.md     # guía de configuración del backend
+```

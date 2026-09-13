@@ -5,6 +5,9 @@ import Services from "../components/Services.astro";
 import Team from "../components/Team.astro";
 import Footer from "../components/Footer.astro";
 import Reservation from "../components/Reservation.astro";
+
+// La landing sigue siendo estática aunque el proyecto esté en output: "server".
+export const prerender = true;
 ---
 
 <Layout title="Next Level Barbershop | La Mejor Barberia de Neiva">
