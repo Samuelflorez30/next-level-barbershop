@@ -28,7 +28,13 @@ function connect(): { client: Client; db: Database } {
   }
   const authToken = readEnv('TURSO_AUTH_TOKEN') || undefined;
 
-  const client = createClient({ url, authToken });
+  const client = createClient({
+    url,
+    authToken,
+    // Solo aplica a `file:` (SQLite local): espera en vez de fallar con
+    // SQLITE_BUSY si otro proceso tiene la base de datos bloqueada.
+    timeout: 2000,
+  });
   const db = drizzle(client, { schema });
   return { client, db };
 }

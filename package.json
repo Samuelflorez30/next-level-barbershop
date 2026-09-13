@@ -14,7 +14,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "node --env-file=.env --import tsx src/db/seed.ts"
+    "db:seed": "node --env-file=.env --import tsx src/db/seed.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
-    "tsx": "^4.23.13"
+    "tsx": "^4.23.13",
+    "vitest": "^5.0.0"
   }
 }

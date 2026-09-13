@@ -105,7 +105,17 @@ SEED_RESET_PASSWORDS=1 npm run db:seed
 > Los emails de los barberos (`<slug>@barbernextlevel.com`) son provisionales;
 > edítalos en `src/db/seed.ts` cuando tengas los reales.
 
-## 6. Desplegar en Vercel
+## 6. Tests
+
+```sh
+npm test
+```
+
+Cada archivo de test crea su propia base de datos SQLite temporal (en el
+directorio temporal del sistema), aplica las migraciones de `drizzle/` y la
+borra al terminar. No necesita Turso ni toca `.env`.
+
+## 7. Desplegar en Vercel
 
 El proyecto ya está configurado con `@astrojs/vercel` (`output: 'server'`).
 La landing (`/`) se prerenderiza y se sirve como HTML estático; las rutas del
@@ -131,6 +141,11 @@ src/db/schema.ts       # definición de tablas, relaciones y tipos
 src/db/client.ts       # instancia única de Drizzle conectada a Turso
 src/db/seed.ts         # datos iniciales
 src/lib/password.ts    # hash/verificación de contraseñas (scrypt)
+src/lib/time.ts        # conversión hora local Bogotá ⇄ UTC
+src/lib/availability.ts# cálculo de slots disponibles
+src/lib/appointments.ts# crear / consultar / cancelar citas
+src/pages/api/         # endpoints REST (ver docs/API.md)
+src/test/              # helpers de test y tests de integración de la API
 ```
 
 ## Convenciones del esquema

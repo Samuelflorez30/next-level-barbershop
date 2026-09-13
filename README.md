@@ -18,7 +18,8 @@ npm run dev
 
 La guía completa para crear la base de datos en Turso, correr migraciones,
 cargar los datos iniciales y desplegar en Vercel está en
-[`docs/SETUP.md`](docs/SETUP.md).
+[`docs/SETUP.md`](docs/SETUP.md). Los endpoints de reservas están
+documentados en [`docs/API.md`](docs/API.md).
 
 ## Comandos
 
@@ -32,6 +33,7 @@ cargar los datos iniciales y desplegar en Vercel está en
 | `npm run db:push`     | Sincroniza el esquema sin migración (solo desarrollo)   |
 | `npm run db:seed`     | Carga barberos, servicios, horarios y usuarios iniciales |
 | `npm run db:studio`   | Abre Drizzle Studio                                     |
+| `npm test`            | Corre los tests (Vitest) contra una SQLite temporal     |
 
 ## Estructura
 
@@ -40,9 +42,11 @@ src/
 ├── components/   # secciones de la landing (Team, Services, Reservation…)
 ├── db/           # schema.ts, client.ts, seed.ts
 ├── layouts/
-├── lib/          # utilidades (password.ts)
+├── lib/          # availability.ts, appointments.ts, time.ts, api.ts, password.ts
 ├── pages/
-└── styles/
+│   └── api/      # endpoints REST (ver docs/API.md)
+├── styles/
+└── test/         # helpers de test + tests de integración de la API
 drizzle/          # migraciones SQL
-docs/SETUP.md     # guía de configuración del backend
+docs/             # SETUP.md (configuración), API.md (endpoints)
 ```

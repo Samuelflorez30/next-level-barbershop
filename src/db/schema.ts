@@ -175,6 +175,12 @@ export const appointments = sqliteTable(
   (t) => [
     index('appointments_barber_start_idx').on(t.barberId, t.startDatetime),
     index('appointments_status_idx').on(t.status),
+    // Garantía a nivel de DB contra dobles reservas: un barbero no puede tener
+    // dos citas activas que empiecen en el mismo instante (los slots están
+    // alineados a la hora, así que esto cubre el caso de carrera).
+    uniqueIndex('appointments_barber_start_active_uq')
+      .on(t.barberId, t.startDatetime)
+      .where(sql`status IN ('pending', 'confirmed')`),
   ],
 );
 

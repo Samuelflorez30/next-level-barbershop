@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `appointments_barber_start_active_uq` ON `appointments` (`barber_id`,`start_datetime`) WHERE status IN ('pending', 'confirmed');
