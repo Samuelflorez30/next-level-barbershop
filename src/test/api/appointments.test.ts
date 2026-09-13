@@ -85,7 +85,7 @@ afterAll(() => {
 
 beforeEach(async () => {
   await truncateAll(db);
-  ({ barber, service } = await seedFixtures(db, { bufferMinutes: 5 }));
+  ({ barber, service } = await seedFixtures(db));
 });
 
 describe('GET /api/availability', () => {
@@ -142,14 +142,20 @@ describe('POST /api/appointments', () => {
     expect(body.endDatetime).toBe('2026-10-14T17:00:00.000Z');
   });
 
-  it('la cita creada desaparece de la disponibilidad (con buffer)', async () => {
+  it('la cita creada desaparece de la disponibilidad sin afectar los slots vecinos', async () => {
     await post(validBody(barber, service, '10:00'));
     const { body } = await availability(barber.id, service.id);
     const locals = body.slots.map((s: { startLocal: string }) => s.startLocal);
     expect(locals).not.toContain('10:00');
-    expect(locals).not.toContain('09:00'); // buffer 5 min solapa 09:00–10:00
-    expect(locals).not.toContain('11:00');
-    expect(locals).toContain('12:00');
+    expect(locals).toContain('09:00');
+    expect(locals).toContain('11:00');
+    expect(locals).toHaveLength(11);
+  });
+
+  it('se pueden reservar horas consecutivas (09:00, 10:00 y 11:00)', async () => {
+    for (const t of ['09:00', '10:00', '11:00']) {
+      expect((await post(validBody(barber, service, t))).status).toBe(201);
+    }
   });
 
   it('responde 409 si el slot ya está ocupado', async () => {
@@ -161,7 +167,11 @@ describe('POST /api/appointments', () => {
     expect(second.body.error.code).toBe('SLOT_TAKEN');
   });
 
-  it('responde 409 si el slot solapa por buffer con otra cita', async () => {
+  it('con buffer explícito, responde 409 si el slot solapa por buffer con otra cita', async () => {
+    const { barbers } = await import('../../db/schema');
+    const { eq } = await import('drizzle-orm');
+    await db.update(barbers).set({ bufferMinutes: 5 }).where(eq(barbers.id, barber.id));
+
     await post(validBody(barber, service, '10:00'));
     const adjacent = await post(validBody(barber, service, '11:00'));
     expect(adjacent.status).toBe(409);

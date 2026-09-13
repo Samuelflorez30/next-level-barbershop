@@ -158,4 +158,7 @@ src/test/              # helpers de test y tests de integración de la API
   `end_time` es la hora de cierre; la última cita disponible se calcula como
   `cierre − duración del servicio`.
 - **`day_of_week`**: `0` = lunes … `6` = domingo.
+- **`barbers.buffer_minutes`**: `0` por defecto — las citas van seguidas
+  (10:00 no bloquea 09:00 ni 11:00). Solo súbelo si quieres un descanso
+  obligatorio entre citas.
 - **`barber_time_off.barber_id = NULL`**: cierre para todo el negocio.

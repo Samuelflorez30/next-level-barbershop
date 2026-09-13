@@ -31,8 +31,10 @@ curl "http://localhost:4321/api/barbers?serviceId=3"
 ## GET /api/availability?barberId=&serviceId=&date=YYYY-MM-DD
 
 Slots disponibles para ese día (hora local Bogotá). Descarta citas activas
-(`pending`/`confirmed`) expandidas por `barbers.buffer_minutes`, bloqueos
-(`barber_time_off`, propios o globales) y horas ya pasadas.
+(`pending`/`confirmed`), bloqueos (`barber_time_off`, propios o globales) y
+horas ya pasadas. Una cita solo ocupa su propio slot: reservar 10:00 deja
+09:00 y 11:00 disponibles (`barbers.buffer_minutes` es 0 por defecto; si se
+configura un valor mayor, la cita se expande ese tiempo en ambos extremos).
 
 ```sh
 curl "http://localhost:4321/api/availability?barberId=1&serviceId=3&date=2026-10-14"

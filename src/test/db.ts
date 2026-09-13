@@ -70,11 +70,11 @@ export interface FixtureOptions {
 
 /**
  * Inserta un barbero, un servicio, la relación entre ambos y el horario.
- * Por defecto: buffer 5 min, servicio de 60 min, toda la semana 09:00–21:00.
+ * Por defecto: sin buffer, servicio de 60 min, toda la semana 09:00–21:00.
  */
 export async function seedFixtures(db: Database, opts: FixtureOptions = {}) {
   const {
-    bufferMinutes = 5,
+    bufferMinutes = 0,
     durationMinutes = 60,
     days = FULL_WEEK,
     startTime = '09:00',

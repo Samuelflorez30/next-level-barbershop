@@ -34,8 +34,11 @@ export const barbers = sqliteTable('barbers', {
   quote: text('quote'),
   photoUrl: text('photo_url'),
   phoneWhatsapp: text('phone_whatsapp').notNull(),
-  /** Minutos de descanso entre citas consecutivas. */
-  bufferMinutes: integer('buffer_minutes').notNull().default(5),
+  /**
+   * Minutos de descanso entre citas consecutivas. Por defecto 0: los slots
+   * van cada 60 min y una cita a las 10:00 no debe bloquear 09:00 ni 11:00.
+   */
+  bufferMinutes: integer('buffer_minutes').notNull().default(0),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
   displayOrder: integer('display_order').notNull().default(0),
   createdAt: createdAt(),

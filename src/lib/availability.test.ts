@@ -148,7 +148,34 @@ describe('computeAvailableSlots', () => {
     expect(slots).toEqual([]);
   });
 
-  it('cita en el límite de cierre con buffer: bloquea también el slot anterior', async () => {
+  it('por defecto (sin buffer) una cita a las 10:00 deja libres 09:00 y 11:00', async () => {
+    const { barber, service } = await seedFixtures(db);
+    await book(barber, service, '10:00', '11:00');
+
+    const locals = (
+      await computeAvailableSlots({ barberId: barber.id, serviceId: service.id, date: WEDNESDAY }, db)
+    ).map((s) => s.startLocal);
+
+    expect(locals).not.toContain('10:00');
+    expect(locals).toContain('09:00');
+    expect(locals).toContain('11:00');
+    expect(locals).toHaveLength(11);
+  });
+
+  it('cita en el límite de cierre sin buffer: solo bloquea su slot', async () => {
+    const { barber, service } = await seedFixtures(db);
+    await book(barber, service, '20:00', '21:00');
+
+    const locals = (
+      await computeAvailableSlots({ barberId: barber.id, serviceId: service.id, date: WEDNESDAY }, db)
+    ).map((s) => s.startLocal);
+
+    expect(locals).not.toContain('20:00');
+    expect(locals).toContain('19:00');
+    expect(locals).toHaveLength(11);
+  });
+
+  it('con buffer explícito, una cita al cierre bloquea también el slot anterior', async () => {
     // buffer 5 → la cita 20:00–21:00 ocupa [19:55, 21:05) y solapa el slot 19:00–20:00.
     const { barber, service } = await seedFixtures(db, { bufferMinutes: 5 });
     await book(barber, service, '20:00', '21:00');
@@ -163,20 +190,7 @@ describe('computeAvailableSlots', () => {
     expect(locals).toHaveLength(10);
   });
 
-  it('sin buffer, una cita solo bloquea su propio slot', async () => {
-    const { barber, service } = await seedFixtures(db, { bufferMinutes: 0 });
-    await book(barber, service, '20:00', '21:00');
-
-    const locals = (
-      await computeAvailableSlots({ barberId: barber.id, serviceId: service.id, date: WEDNESDAY }, db)
-    ).map((s) => s.startLocal);
-
-    expect(locals).not.toContain('20:00');
-    expect(locals).toContain('19:00');
-    expect(locals).toHaveLength(11);
-  });
-
-  it('una cita a media mañana con buffer bloquea el slot anterior y el siguiente', async () => {
+  it('con buffer explícito, una cita a media mañana bloquea el slot anterior y el siguiente', async () => {
     const { barber, service } = await seedFixtures(db, { bufferMinutes: 5 });
     await book(barber, service, '12:00', '13:00'); // ocupa [11:55, 13:05)
 
