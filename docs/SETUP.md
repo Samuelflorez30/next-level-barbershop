@@ -55,6 +55,28 @@ TURSO_AUTH_TOKEN=
 
 Todos los comandos siguientes funcionan igual con esta configuración.
 
+### Notificaciones por email (Resend)
+
+1. Crea una cuenta en [resend.com](https://resend.com) y una API key.
+2. En `.env`:
+
+```dotenv
+RESEND_API_KEY=re_xxxxxxxx
+RESEND_FROM_EMAIL=onboarding@resend.dev   # o reservas@barbernextlevel.com cuando el dominio esté verificado
+NOTIFY_EMAIL=reservasnextlevel@gmail.com
+PUBLIC_SITE_URL=https://barbernextlevel.com
+```
+
+> Con `onboarding@resend.dev` Resend **solo entrega al correo de tu propia
+> cuenta**; para escribir a clientes verifica el dominio en Resend → Domains y
+> cambia `RESEND_FROM_EMAIL`.
+
+Se envían: aviso al dueño por cada reserva, confirmación al cliente (si dejó
+correo) y aviso de cancelación (dueño + cliente) tanto desde el enlace del
+cliente como desde el panel. Si `RESEND_API_KEY` está vacío, todo sigue
+funcionando y solo aparece un aviso en la consola del servidor; un error de
+Resend nunca revierte ni bloquea una reserva.
+
 ## 4. Aplicar el esquema (migraciones)
 
 Las migraciones SQL viven en `drizzle/` y se generan a partir de
@@ -90,10 +112,11 @@ Inserta:
 - 9 servicios con precio en COP y duración de 60 min
 - `barber_services`: todos los barberos ofrecen todos los servicios
 - Horario semanal por barbero: lunes–sábado 09:00–21:00, domingo 10:00–21:00
-- Usuario **admin** (`davidflorezramirez1602@gmail.com`) y un usuario por barbero
+- Usuario **admin** (`reservasnextlevel@gmail.com`) y un usuario por barbero
 
 Al terminar imprime en consola una tabla con las **contraseñas temporales**.
-Guárdalas: no se vuelven a mostrar.
+Guárdalas: no se vuelven a mostrar. Con ellas entras al panel en `/login`
+(el admin ve y edita a todos los barberos; cada barbero solo lo suyo).
 
 El seed es idempotente: puedes ejecutarlo varias veces. Los usuarios que ya
 existen conservan su contraseña. Para regenerarlas:
@@ -102,8 +125,9 @@ existen conservan su contraseña. Para regenerarlas:
 SEED_RESET_PASSWORDS=1 npm run db:seed
 ```
 
-> Los emails de los barberos (`<slug>@barbernextlevel.com`) son provisionales;
-> edítalos en `src/db/seed.ts` cuando tengas los reales.
+> El login no valida formato de email: los barberos usan su nombre de usuario
+> simple y el admin su correo. Si la base tiene usuarios de un seed anterior
+> (`<slug>@barbernextlevel.com`), el seed los renombra en sitio.
 
 ## 6. Tests
 
@@ -118,8 +142,11 @@ borra al terminar. No necesita Turso ni toca `.env`.
 ## 7. Desplegar en Vercel
 
 El proyecto ya está configurado con `@astrojs/vercel` (`output: 'server'`).
-La landing (`/`) se prerenderiza y se sirve como HTML estático; las rutas del
-sistema de reservas correrán como funciones serverless.
+La landing (`/`) se renderiza en el servidor (lee barberos y servicios de la
+base de datos) con `Cache-Control: s-maxage=60`, así que el CDN de Vercel la
+sirve cacheada y los cambios aparecen en ≤ 1 minuto. Las rutas `/api/*` son
+funciones serverless. Por eso `TURSO_DATABASE_URL` y `TURSO_AUTH_TOKEN` deben
+existir en el entorno de **runtime** de Vercel, no solo en el build.
 
 Configura las variables de entorno en Vercel (Project → Settings →
 Environment Variables) o con la CLI:
@@ -144,6 +171,14 @@ src/lib/password.ts    # hash/verificación de contraseñas (scrypt)
 src/lib/time.ts        # conversión hora local Bogotá ⇄ UTC
 src/lib/availability.ts# cálculo de slots disponibles
 src/lib/appointments.ts# crear / consultar / cancelar citas
+src/lib/whatsapp.ts    # enlaces y mensajes de WhatsApp (servidor y navegador)
+src/lib/notifications.ts # emails con Resend (nunca lanzan)
+src/lib/auth.ts        # login, sesiones (tabla sessions) y cookie
+src/lib/panel.ts       # autorización por rol + horarios / días libres / citas
+src/middleware.ts      # protege /panel/** y /api/panel/**, expone locals.user
+src/pages/panel/       # dashboard, horario, días libres (Astro + JS plano)
+src/pages/citas/       # /citas/<token>: el cliente ve y cancela su cita (enlace de los emails)
+src/components/booking # BookingWidget.tsx (isla React) + cliente de la API
 src/pages/api/         # endpoints REST (ver docs/API.md)
 src/test/              # helpers de test y tests de integración de la API
 ```

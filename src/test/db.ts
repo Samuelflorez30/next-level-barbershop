@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { migrate } from 'drizzle-orm/libsql/migrator';
+import { hashPassword } from '../lib/password';
 import type { Database } from '../db/client';
 import {
   appointments,
@@ -22,7 +23,9 @@ import {
   barberTimeOff,
   barbers,
   services,
+  sessions,
   users,
+  type UserRole,
 } from '../db/schema';
 
 /** Fija TURSO_DATABASE_URL a un archivo temporal único y devuelve su ruta. */
@@ -48,6 +51,7 @@ export async function migrateTestDb(db: Database) {
 
 /** Borra todas las filas (para aislar cada test). */
 export async function truncateAll(db: Database) {
+  await db.delete(sessions);
   await db.delete(appointments);
   await db.delete(barberTimeOff);
   await db.delete(barberSchedules);
@@ -111,4 +115,21 @@ export async function seedFixtures(db: Database, opts: FixtureOptions = {}) {
   }
 
   return { barber, service };
+}
+
+/** Crea un usuario del panel con contraseña en bcrypt. */
+export async function seedUser(
+  db: Database,
+  opts: { username: string; password: string; role: UserRole; barberId?: number | null },
+) {
+  const [user] = await db
+    .insert(users)
+    .values({
+      username: opts.username,
+      passwordHash: await hashPassword(opts.password),
+      role: opts.role,
+      barberId: opts.barberId ?? null,
+    })
+    .returning();
+  return user;
 }

@@ -2,9 +2,15 @@
 
 Sitio web y sistema de reservas de Next Level Barbershop (Neiva, Huila).
 
-- **Frontend**: Astro 7 + Tailwind CSS v4
+- **Frontend**: Astro 7 + Tailwind CSS v4 (React solo para la isla del
+  widget de reservas, `src/components/booking/`)
 - **Backend**: Astro en modo servidor desplegado en Vercel
 - **Base de datos**: Turso (SQLite/libSQL) con Drizzle ORM
+- **Panel** (`/login` → `/panel`): cada barbero gestiona su horario, días
+  libres y citas; el admin gestiona los de todos.
+- **Emails** (Resend): aviso al dueño por cada reserva, confirmación al
+  cliente y avisos de cancelación. Opcional: sin `RESEND_API_KEY` el sitio
+  funciona igual.
 
 ## Primeros pasos
 
@@ -40,11 +46,14 @@ documentados en [`docs/API.md`](docs/API.md).
 ```
 src/
 ├── components/   # secciones de la landing (Team, Services, Reservation…)
+│   └── booking/  # BookingWidget.tsx (React) + cliente de la API
 ├── db/           # schema.ts, client.ts, seed.ts
-├── layouts/
-├── lib/          # availability.ts, appointments.ts, time.ts, api.ts, password.ts
+├── layouts/      # Layout.astro (sitio) y PanelLayout.astro (panel)
+├── middleware.ts # sesión + protección de /panel y /api/panel
+├── lib/          # availability.ts, appointments.ts, time.ts, whatsapp.ts, api.ts, password.ts
 ├── pages/
-│   └── api/      # endpoints REST (ver docs/API.md)
+│   ├── api/      # endpoints REST públicos, auth y panel (ver docs/API.md)
+│   └── panel/    # dashboard, horario, días libres
 ├── styles/
 └── test/         # helpers de test + tests de integración de la API
 drizzle/          # migraciones SQL

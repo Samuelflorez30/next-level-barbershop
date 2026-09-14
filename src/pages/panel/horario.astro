@@ -1,0 +1,155 @@
+---
+// Editor del horario semanal (barber_schedules) del barbero seleccionado.
+// Envía PUT /api/panel/schedules con la semana completa; el servidor decide
+// el barbero según el rol (un barbero nunca puede editar a otro).
+import PanelLayout from "../../layouts/PanelLayout.astro";
+import { getPanelContext } from "../../lib/panel-page";
+import { DAY_NAMES, getWeekSchedule } from "../../lib/panel";
+import { btnPrimary, card, checkbox, eyebrow, inputBase, link } from "../../components/panel/ui";
+
+const ctx = await getPanelContext(Astro);
+if (ctx instanceof Response) return ctx;
+const { user, selected } = ctx;
+
+const schedule = await getWeekSchedule(selected.id);
+const initial = DAY_NAMES.map((_, day) => ({
+  dayOfWeek: day,
+  ranges: schedule
+    .filter((s) => s.dayOfWeek === day && s.isActive)
+    .map((s) => ({ startTime: s.startTime, endTime: s.endTime })),
+}));
+---
+
+<PanelLayout title="Horario" ctx={ctx} active="horario">
+  <div class="max-w-3xl">
+    <p class={`${eyebrow} mb-1`}>Horario semanal</p>
+    <h1 class="font-serif text-3xl font-bold text-white mb-2">{selected.name}</h1>
+    <p class="text-zinc-400 text-sm mb-8">
+      Define las franjas en que atiendes cada día (hora local). Puedes tener
+      varias franjas por día (turno partido). Los turnos de reserva se generan
+      cada hora desde la apertura de cada franja.
+    </p>
+
+    <form id="schedule-form" data-barber-id={user.role === "admin" ? selected.id : ""} data-initial={JSON.stringify(initial)} class="space-y-3">
+      {DAY_NAMES.map((name, day) => (
+        <fieldset class={`${card} p-4 sm:p-5`} data-day={day}>
+          <div class="flex items-center justify-between gap-4 mb-3">
+            <label class="flex items-center gap-3 cursor-pointer select-none">
+              <input type="checkbox" data-open class={checkbox} />
+              <span class="font-semibold text-white">{name}</span>
+              <span class={`${eyebrow} tracking-wider`} data-closed-label>Cerrado</span>
+            </label>
+            <button type="button" data-add class={`${link} text-[#D4AF37] hover:text-white`}>+ Franja</button>
+          </div>
+          <div data-ranges class="space-y-2"></div>
+        </fieldset>
+      ))}
+
+      <div class="flex flex-wrap items-center gap-4 pt-4">
+        <button type="submit" class={btnPrimary} data-save>
+          Guardar horario
+        </button>
+        <span data-message class="text-sm" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <template id="range-template">
+      <div class="flex items-center gap-2" data-range>
+        <input type="time" data-start step="900" required class={`${inputBase} flex-1 min-w-0 tabular-nums`} aria-label="Hora de apertura" />
+        <span class="text-zinc-500 shrink-0" aria-hidden="true">–</span>
+        <input type="time" data-end step="900" required class={`${inputBase} flex-1 min-w-0 tabular-nums`} aria-label="Hora de cierre" />
+        <button type="button" data-remove class={`${link} hover:text-red-300 shrink-0 ml-1`} aria-label="Quitar franja">Quitar</button>
+      </div>
+    </template>
+  </div>
+
+  <script>
+    type Range = { startTime: string; endTime: string };
+    type Day = { dayOfWeek: number; ranges: Range[] };
+
+    const form = document.getElementById("schedule-form") as HTMLFormElement;
+    const template = document.getElementById("range-template") as HTMLTemplateElement;
+    const message = form.querySelector<HTMLElement>("[data-message]")!;
+    const initial: Day[] = JSON.parse(form.dataset.initial ?? "[]");
+
+    function addRange(container: HTMLElement, range: Range = { startTime: "09:00", endTime: "21:00" }) {
+      const node = template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      node.querySelector<HTMLInputElement>("[data-start]")!.value = range.startTime;
+      node.querySelector<HTMLInputElement>("[data-end]")!.value = range.endTime;
+      node.querySelector("[data-remove]")!.addEventListener("click", () => {
+        node.remove();
+        syncDay(container.closest<HTMLElement>("[data-day]")!);
+      });
+      container.appendChild(node);
+    }
+
+    function syncDay(fieldset: HTMLElement) {
+      const open = fieldset.querySelector<HTMLInputElement>("[data-open]")!;
+      const ranges = fieldset.querySelector<HTMLElement>("[data-ranges]")!;
+      const count = ranges.querySelectorAll("[data-range]").length;
+      if (count === 0) open.checked = false;
+      open.checked = open.checked && count > 0;
+      fieldset.querySelector<HTMLElement>("[data-closed-label]")!.hidden = open.checked;
+      ranges.hidden = !open.checked;
+    }
+
+    form.querySelectorAll<HTMLElement>("[data-day]").forEach((fieldset) => {
+      const day = Number(fieldset.dataset.day);
+      const ranges = fieldset.querySelector<HTMLElement>("[data-ranges]")!;
+      const open = fieldset.querySelector<HTMLInputElement>("[data-open]")!;
+      for (const r of initial[day]?.ranges ?? []) addRange(ranges, r);
+      open.checked = ranges.children.length > 0;
+      syncDay(fieldset);
+
+      open.addEventListener("change", () => {
+        if (open.checked && ranges.children.length === 0) addRange(ranges);
+        syncDay(fieldset);
+      });
+      fieldset.querySelector("[data-add]")!.addEventListener("click", () => {
+        addRange(ranges);
+        open.checked = true;
+        syncDay(fieldset);
+      });
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const days: Day[] = [];
+      form.querySelectorAll<HTMLElement>("[data-day]").forEach((fieldset) => {
+        const open = fieldset.querySelector<HTMLInputElement>("[data-open]")!.checked;
+        const ranges: Range[] = open
+          ? [...fieldset.querySelectorAll<HTMLElement>("[data-range]")].map((r) => ({
+              startTime: r.querySelector<HTMLInputElement>("[data-start]")!.value,
+              endTime: r.querySelector<HTMLInputElement>("[data-end]")!.value,
+            }))
+          : [];
+        days.push({ dayOfWeek: Number(fieldset.dataset.day), ranges });
+      });
+
+      const body: Record<string, unknown> = { days };
+      if (form.dataset.barberId) body.barberId = Number(form.dataset.barberId);
+
+      const save = form.querySelector<HTMLButtonElement>("[data-save]")!;
+      save.disabled = true;
+      delete message.dataset.state;
+      message.textContent = "Guardando…";
+      message.className = "text-sm text-zinc-400";
+      const res = await fetch("/api/panel/schedules", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => null);
+      save.disabled = false;
+      if (res.ok) {
+        message.textContent = "Horario guardado.";
+        message.className = "text-sm text-emerald-300";
+        message.dataset.state = "saved";
+      } else {
+        message.textContent = data?.error?.message ?? "No se pudo guardar.";
+        message.className = "text-sm text-red-300";
+        message.dataset.state = "error";
+      }
+    });
+  </script>
+</PanelLayout>

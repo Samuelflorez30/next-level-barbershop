@@ -1,38 +1,36 @@
 ---
 // src/components/Reservation.astro
+import BookingWidget from "./booking/BookingWidget";
 ---
 
-<section id="reservar" class="w-full">
-  <div class="w-full grid grid-cols-1 lg:grid-cols-2">
-    <!-- Columna Izquierda (Mapa Oscuro) -->
-    <div class="relative w-full h-full min-h-[400px]">
-      <iframe
-        src="https://maps.google.com/maps?q=Santa%20Lucia%20Plaza,%20Neiva,%20Colombia+(Next%20Level%20Barbershop)&t=&z=16&ie=UTF8&iwloc=B&output=embed"
-        class="absolute inset-0 w-full h-full border-0 grayscale-[20%] contrast-125"
-        allowfullscreen=""
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        title="Next Level Barbershop - Santa Lucía Plaza"></iframe>
-    </div>
+<section
+  id="reservar"
+  class="relative w-full bg-[url('/Interno.jpg')] bg-cover bg-center scroll-mt-16"
+>
+  <!-- Overlay -->
+  <div class="absolute inset-0 bg-gradient-to-r from-black/95 via-black/85 to-black/70"></div>
 
-    <!-- Columna Derecha (Background + Overlay + CTA) -->
-    <div
-      class="relative flex flex-col justify-center p-6 sm:p-8 md:p-12 lg:p-24 bg-[url('/Interno.jpg')] bg-cover bg-center"
-    >
-      <!-- Overlay -->
-      <div class="absolute inset-0 bg-gradient-to-r from-black/90 to-black/70">
-      </div>
-
-      <!-- Contenido -->
-      <div class="relative z-10 flex flex-col items-start">
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-24">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
+      <!-- Columna principal: widget de reserva -->
+      <div class="lg:col-span-7 flex flex-col">
         <h2
-          class="text-3xl md:text-5xl font-serif font-bold text-[#D4AF37] tracking-widest uppercase mb-6"
+          class="text-3xl md:text-5xl font-serif font-bold text-[#D4AF37] tracking-widest uppercase mb-3"
         >
           RESERVA TU ESPACIO
         </h2>
+        <p class="text-zinc-400 text-base md:text-lg mb-8 max-w-xl">
+          Elige tu servicio, tu barbero y la hora que mejor te quede. Tu cita
+          queda confirmada al instante.
+        </p>
 
+        <BookingWidget client:load />
+      </div>
+
+      <!-- Columna secundaria: horario, dirección y mapa -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
         <!-- Bloque de Horarios -->
-        <div class="flex items-start gap-3 mb-6 text-zinc-300">
+        <div class="flex items-start gap-3 text-zinc-300">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -52,14 +50,15 @@
               >Horario de Atención</span
             >
             <p class="text-zinc-400 text-sm tracking-wide">
-              Lunes a Viernes: 9:00 AM - 9:00 PM<br />
-              Sábados, Domingos y Festivos: 9:00 AM - 9:00 PM
+              Lunes a Sábado: 9:00 AM - 9:00 PM<br />
+              Domingos y Festivos: 10:00 AM - 9:00 PM
             </p>
           </div>
         </div>
+
         <!-- Bloque de Dirección Exacta -->
         <div
-          class="flex items-center gap-3 mb-8 text-zinc-400 text-sm tracking-wide"
+          class="flex items-center gap-3 text-zinc-400 text-sm tracking-wide"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -85,14 +84,18 @@
           </address>
         </div>
 
-        <a
-          href="https://wa.me/573142915681?text=Hola%2C%20deseo%20agendar%20una%20cita"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-block px-10 py-4 bg-[#D4AF37] text-black font-bold tracking-widest uppercase rounded-sm transition-colors duration-300 hover:bg-white"
+        <!-- Mapa -->
+        <div
+          class="relative w-full flex-1 min-h-[400px] rounded-2xl overflow-hidden border border-white/10"
         >
-          Agendar Cita
-        </a>
+          <iframe
+            src="https://maps.google.com/maps?q=Santa%20Lucia%20Plaza,%20Neiva,%20Colombia+(Next%20Level%20Barbershop)&t=&z=16&ie=UTF8&iwloc=B&output=embed"
+            class="absolute inset-0 w-full h-full border-0 grayscale-[20%] contrast-125"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Next Level Barbershop - Santa Lucía Plaza"></iframe>
+        </div>
       </div>
     </div>
   </div>

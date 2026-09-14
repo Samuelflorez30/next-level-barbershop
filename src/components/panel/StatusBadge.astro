@@ -1,0 +1,15 @@
+---
+import type { AppointmentStatus } from "../../db/schema";
+import { STATUS_LABELS } from "../../lib/panel";
+import { BADGE_BASE, STATUS_BADGE, STATUS_DOT } from "./status-styles";
+
+interface Props {
+  status: AppointmentStatus;
+}
+const { status } = Astro.props;
+---
+
+<span class={`${BADGE_BASE} ${STATUS_BADGE[status]}`} data-status={status}>
+  <span class={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status]}`} aria-hidden="true"></span>
+  {STATUS_LABELS[status]}
+</span>

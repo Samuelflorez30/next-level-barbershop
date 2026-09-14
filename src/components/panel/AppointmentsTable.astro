@@ -1,0 +1,276 @@
+---
+// Tabla de citas con acciones de estado (PATCH /api/panel/appointments/:id).
+// Desktop: tabla con encabezado fijo. Móvil (< md): las mismas filas se
+// muestran como tarjetas apiladas vía CSS (no hay scroll horizontal).
+// La "próxima cita" (primera confirmada/pendiente en el futuro) se destaca.
+import type { AppointmentStatus } from "../../db/schema";
+import { STATUS_LABELS } from "../../lib/panel";
+import { formatBogotaTime } from "../../lib/whatsapp";
+import { utcToBogota } from "../../lib/time";
+import StatusBadge from "./StatusBadge.astro";
+import { BADGE_BASE, NEXT_BADGE, STATUS_DOT } from "./status-styles";
+import { focusRing } from "./ui";
+
+interface Row {
+  id: number;
+  startDatetime: Date;
+  endDatetime: Date;
+  clientName: string;
+  clientPhone: string;
+  clientNote: string | null;
+  price: number;
+  status: AppointmentStatus;
+  barber: { id: number; name: string } | null;
+  service: { id: number; name: string } | null;
+}
+interface Props {
+  rows: Row[];
+  showBarber?: boolean;
+  emptyText?: string;
+  /** Instante de referencia para "próxima" (por defecto ahora). */
+  now?: Date;
+  /** Si la lista mezcla barberos, "próxima" se calcula solo para este barbero. */
+  highlightBarberId?: number;
+}
+const { rows, showBarber = false, emptyText = "No hay citas.", now = new Date(), highlightBarberId } = Astro.props;
+
+// Próxima cita: la primera (vienen ordenadas por inicio) activa y en el futuro,
+// del barbero indicado si la lista es consolidada.
+const nextId =
+  rows.find(
+    (a) =>
+      (a.status === "confirmed" || a.status === "pending") &&
+      a.startDatetime.getTime() >= now.getTime() &&
+      (highlightBarberId === undefined || a.barber?.id === highlightBarberId),
+  )?.id ?? null;
+
+const cop = new Intl.NumberFormat("es-CO");
+
+const actions: { status: AppointmentStatus; label: string }[] = [
+  { status: "confirmed", label: "Confirmar" },
+  { status: "completed", label: "Marcar completada" },
+  { status: "no_show", label: "Marcar no asistió" },
+  { status: "cancelled", label: "Cancelar cita" },
+];
+
+// --- Clases -----------------------------------------------------------------
+const th = `text-left ${"text-[10px] font-bold uppercase tracking-widest text-zinc-500"} px-4 py-3 bg-zinc-950/95 backdrop-blur border-b border-white/10`;
+// Celda: en desktop celda de tabla; en móvil bloque dentro de la tarjeta.
+const td = "md:px-4 md:py-3 md:align-top max-md:p-0 max-md:min-w-0";
+// Etiqueta pequeña que precede al valor solo en móvil (servicio, barbero, precio).
+const mobileLabel =
+  "max-md:before:content-[attr(data-label)] max-md:before:block max-md:before:text-[10px] max-md:before:font-bold max-md:before:uppercase max-md:before:tracking-widest max-md:before:text-zinc-500 max-md:before:mb-0.5";
+const rowBase =
+  "transition-colors md:hover:bg-white/[0.02] " +
+  // móvil: tarjeta en grid de 2 columnas
+  "max-md:grid max-md:grid-cols-2 max-md:gap-x-4 max-md:gap-y-2 max-md:relative max-md:rounded-xl max-md:border max-md:border-white/10 max-md:bg-zinc-900/40 max-md:p-4 max-md:pr-14";
+const rowNext = "border-l-[3px] border-l-[#D4AF37] bg-[#D4AF37]/5 max-md:border-l-[#D4AF37]";
+const rowNormal = "border-l-[3px] border-l-transparent max-md:border-l max-md:border-l-white/10";
+const menuItem = `w-full text-left px-3 py-2 text-xs font-semibold tracking-wide text-zinc-300 transition-colors hover:bg-white/5 hover:text-white ${focusRing} focus-visible:ring-inset focus-visible:ring-offset-0`;
+---
+
+{rows.length === 0 ? (
+  <p class="text-zinc-500 text-sm py-8 text-center">{emptyText}</p>
+) : (
+  <table class="w-full text-sm border-collapse max-md:block" data-appointments-table>
+    <thead class="max-md:hidden sticky top-16 z-10">
+      <tr>
+        <th class={th}>Fecha</th>
+        <th class={th}>Hora</th>
+        <th class={th}>Cliente</th>
+        <th class={th}>Servicio</th>
+        {showBarber && <th class={th}>Barbero</th>}
+        <th class={`${th} text-right`}>Precio</th>
+        <th class={th}>Estado</th>
+        <th class={`${th} text-right`}><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody class="max-md:block max-md:space-y-3">
+      {rows.map((a) => {
+        const local = utcToBogota(a.startDatetime);
+        const isNext = a.id === nextId;
+        return (
+          <tr
+            data-appointment={a.id}
+            data-appointment-status={a.status}
+            data-next={isNext ? "true" : undefined}
+            class={`${rowBase} ${isNext ? rowNext : rowNormal}`}
+          >
+            {/* Fecha */}
+            <td class={`${td} md:border-b md:border-white/5 whitespace-nowrap text-zinc-400 tabular-nums max-md:order-2 max-md:col-span-2 max-md:text-xs max-md:text-zinc-500`}>
+              {local.date}
+            </td>
+
+            {/* Hora + próxima */}
+            <td class={`${td} md:border-b md:border-white/5 whitespace-nowrap max-md:order-1 max-md:col-span-2`}>
+              <div class="flex items-center gap-2">
+                {isNext && (
+                  <span class={`next-dot w-2 h-2 rounded-full shrink-0 ${STATUS_DOT.confirmed}`} aria-hidden="true"></span>
+                )}
+                <span class={`font-semibold text-white tabular-nums ${isNext ? "max-md:text-lg" : ""}`}>
+                  {formatBogotaTime(a.startDatetime)}
+                </span>
+                {isNext && (
+                  <span class={`${BADGE_BASE} ${NEXT_BADGE}`} data-next-badge>Próxima</span>
+                )}
+              </div>
+            </td>
+
+            {/* Cliente */}
+            <td class={`${td} md:border-b md:border-white/5 max-md:order-3 max-md:col-span-2 max-md:mt-1`}>
+              <div class="text-white font-medium">{a.clientName}</div>
+              <a
+                href={`https://wa.me/${a.clientPhone}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class={`text-xs text-zinc-500 tabular-nums transition-colors hover:text-[#D4AF37] rounded-sm ${focusRing}`}
+              >
+                {a.clientPhone}
+              </a>
+              {a.clientNote && <div class="text-xs text-zinc-500 italic mt-0.5">“{a.clientNote}”</div>}
+            </td>
+
+            {/* Servicio */}
+            <td class={`${td} ${mobileLabel} md:border-b md:border-white/5 text-zinc-300 max-md:order-4 max-md:col-span-2`} data-label="Servicio">
+              {a.service?.name ?? "—"}
+            </td>
+
+            {/* Barbero (solo admin) */}
+            {showBarber && (
+              <td class={`${td} ${mobileLabel} md:border-b md:border-white/5 text-zinc-300 max-md:order-5 max-md:col-span-2`} data-label="Barbero">
+                {a.barber?.name ?? "—"}
+              </td>
+            )}
+
+            {/* Precio */}
+            <td class={`${td} ${mobileLabel} md:border-b md:border-white/5 whitespace-nowrap md:text-right text-[#D4AF37] font-semibold tabular-nums max-md:order-6 max-md:self-end`} data-label="Precio">
+              ${cop.format(a.price)}
+            </td>
+
+            {/* Estado */}
+            <td class={`${td} md:border-b md:border-white/5 max-md:order-7 max-md:justify-self-end max-md:self-end`}>
+              <StatusBadge status={a.status} />
+            </td>
+
+            {/* Acciones (menú ⋮) */}
+            <td class={`${td} md:border-b md:border-white/5 md:text-right max-md:absolute max-md:top-3 max-md:right-3`}>
+              <details class="relative inline-block text-left" data-actions>
+                <summary
+                  class={`list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center w-8 h-8 rounded-md text-zinc-400 transition-colors hover:text-white hover:bg-white/5 ${focusRing}`}
+                  aria-label={`Acciones para la cita de ${a.clientName}`}
+                  title="Cambiar estado"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <circle cx="10" cy="4" r="1.6" /><circle cx="10" cy="10" r="1.6" /><circle cx="10" cy="16" r="1.6" />
+                  </svg>
+                </summary>
+                <ul
+                  class="absolute right-0 top-full mt-1 z-20 min-w-[11.5rem] bg-zinc-900 border border-white/10 rounded-md shadow-2xl shadow-black/60 py-1"
+                  role="menu"
+                >
+                  <li class="px-3 pt-1.5 pb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-600" aria-hidden="true">
+                    Estado: {STATUS_LABELS[a.status]}
+                  </li>
+                  {actions
+                    .filter((x) => x.status !== a.status)
+                    .map((x) => (
+                      <li role="none">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          data-set-status={x.status}
+                          data-id={a.id}
+                          class={`${menuItem} flex items-center gap-2 ${x.status === "cancelled" ? "text-red-300 hover:text-red-200" : ""}`}
+                        >
+                          <span class={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[x.status]}`} aria-hidden="true"></span>
+                          {x.label}
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              </details>
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+)}
+
+<style>
+  /* Punto dorado de la próxima cita: pulso sutil, estático si el usuario
+     prefiere menos movimiento. */
+  @keyframes next-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.45;
+      transform: scale(1.35);
+    }
+  }
+  .next-dot {
+    animation: next-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 0 3px rgb(212 175 55 / 0.15);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .next-dot {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // Menú ⋮: solo un menú abierto a la vez; cerrar al hacer clic fuera o con Escape.
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    document.querySelectorAll<HTMLDetailsElement>("[data-actions][open]").forEach((d) => {
+      if (!d.contains(target)) d.open = false;
+    });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      document.querySelectorAll<HTMLDetailsElement>("[data-actions][open]").forEach((d) => (d.open = false));
+    }
+  });
+  document.addEventListener("toggle", (e) => {
+    const opened = e.target as HTMLDetailsElement;
+    if (!opened.matches?.("[data-actions]") || !opened.open) return;
+    document.querySelectorAll<HTMLDetailsElement>("[data-actions][open]").forEach((d) => {
+      if (d !== opened) d.open = false;
+    });
+  }, true);
+
+  // Cambia el estado de una cita y recarga. Un clic = un PATCH.
+  document.addEventListener("click", async (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-set-status]");
+    if (!btn) return;
+    const status = btn.dataset.setStatus;
+    const id = btn.dataset.id;
+    const menu = btn.closest<HTMLDetailsElement>("[data-actions]");
+    let reason: string | null = null;
+    if (status === "cancelled") {
+      reason = prompt("Motivo de la cancelación (opcional):", "") ?? null;
+      if (reason === null) {
+        if (menu) menu.open = false;
+        return; // canceló el prompt
+      }
+    }
+    btn.disabled = true;
+    const res = await fetch(`/api/panel/appointments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, reason }),
+    });
+    if (menu) menu.open = false;
+    if (res.ok) {
+      location.reload();
+    } else {
+      const body = await res.json().catch(() => null);
+      alert(body?.error?.message ?? "No se pudo actualizar la cita.");
+      btn.disabled = false;
+    }
+  });
+</script>

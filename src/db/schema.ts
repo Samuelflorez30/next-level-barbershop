@@ -195,7 +195,12 @@ export type UserRole = (typeof USER_ROLES)[number];
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  email: text('email').notNull().unique(),
+  /**
+   * Identificador de login. Los barberos usan un nombre simple (p. ej.
+   * "oswaravendano"); el admin puede seguir usando su email. No se valida
+   * formato de email.
+   */
+  username: text('username').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   role: text('role', { enum: USER_ROLES }).notNull(),
   /** Null cuando role = 'admin'. */
@@ -204,6 +209,24 @@ export const users = sqliteTable('users', {
   }),
   createdAt: createdAt(),
 });
+
+// ---------------------------------------------------------------------------
+// sessions — sesiones del panel (cookie httpOnly con el token en claro; aquí
+// se guarda su hash SHA-256 para que una fuga de la DB no sirva para entrar)
+// ---------------------------------------------------------------------------
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    /** SHA-256 (hex) del token que viaja en la cookie. */
+    id: text('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    expiresAt: timestampMs('expires_at').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('sessions_user_idx').on(t.userId)],
+);
 
 // ---------------------------------------------------------------------------
 // relations
@@ -260,8 +283,13 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
   }),
 }));
 
-export const usersRelations = relations(users, ({ one }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   barber: one(barbers, { fields: [users.barberId], references: [barbers.id] }),
+  sessions: many(sessions),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
 }));
 
 // ---------------------------------------------------------------------------
@@ -281,3 +309,5 @@ export type Appointment = typeof appointments.$inferSelect;
 export type NewAppointment = typeof appointments.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;

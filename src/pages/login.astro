@@ -1,0 +1,58 @@
+---
+// Página de inicio de sesión del panel. El middleware redirige a /panel si ya hay sesión.
+import "../styles/global.css";
+
+const error = Astro.url.searchParams.get("error");
+const next = Astro.url.searchParams.get("next") ?? "/panel";
+const messages: Record<string, string> = {
+  credentials: "Usuario o contraseña incorrectos.",
+  missing: "Escribe tu usuario y tu contraseña.",
+};
+---
+
+<!doctype html>
+<html lang="es" class="bg-zinc-950">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/jpg" href="/favicon.jpg" />
+    <title>Iniciar sesión · Next Level Barbershop</title>
+  </head>
+  <body class="min-h-screen bg-zinc-950 text-white flex items-center justify-center px-4 bg-[url('/Interno.jpg')] bg-cover bg-center">
+    <div class="absolute inset-0 bg-black/85"></div>
+    <div class="relative w-full max-w-sm bg-zinc-950/90 border border-white/10 rounded-2xl p-8 shadow-2xl">
+      <div class="text-center mb-8">
+        <img src="/logo.jpg" alt="Next Level Barbershop" class="w-16 h-16 rounded-full object-cover mx-auto mb-4 border border-[#D4AF37]/40" />
+        <h1 class="font-serif text-2xl font-bold tracking-widest text-[#D4AF37] uppercase">Panel</h1>
+        <p class="text-zinc-500 text-sm mt-1">Barberos y administración</p>
+      </div>
+
+      {error && (
+        <p role="alert" class="mb-4 border border-red-500/40 bg-red-500/10 text-red-200 text-sm rounded-md px-4 py-3">
+          {messages[error] ?? "No se pudo iniciar sesión."}
+        </p>
+      )}
+
+      <form method="post" action="/api/auth/login" class="space-y-4">
+        <input type="hidden" name="next" value={next} />
+        <div>
+          <label for="username" class="block text-xs font-bold tracking-widest uppercase text-zinc-400 mb-2">Usuario</label>
+          <input id="username" name="username" type="text" required autocomplete="username" autocapitalize="none" spellcheck="false" autofocus
+            class="w-full bg-zinc-900 border border-white/10 rounded-md px-4 py-3 text-white focus:outline-none focus:border-[#D4AF37]" />
+        </div>
+        <div>
+          <label for="password" class="block text-xs font-bold tracking-widest uppercase text-zinc-400 mb-2">Contraseña</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password"
+            class="w-full bg-zinc-900 border border-white/10 rounded-md px-4 py-3 text-white focus:outline-none focus:border-[#D4AF37]" />
+        </div>
+        <button type="submit"
+          class="w-full py-3 bg-[#D4AF37] text-black font-bold text-sm tracking-widest uppercase rounded-sm transition-colors hover:bg-white">
+          Entrar
+        </button>
+      </form>
+
+      <p class="text-center text-xs text-zinc-600 mt-6"><a href="/" class="hover:text-zinc-400">← Volver al sitio</a></p>
+    </div>
+  </body>
+</html>

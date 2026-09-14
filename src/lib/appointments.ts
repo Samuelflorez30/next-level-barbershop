@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq, gt, inArray, lt } from 'drizzle-orm';
 import { db as defaultDb, type Database } from '../db/client';
+import { isUniqueViolation } from '../db/errors';
 import { appointments, type Appointment } from '../db/schema';
 import {
   BLOCKING_STATUSES,
@@ -10,6 +11,7 @@ import {
   resolveBookingContext,
 } from './availability';
 import { addMinutes, utcToBogota } from './time';
+import { sendBookingConfirmation, sendCancellationNotice, sendOwnerNewBookingAlert } from './notifications';
 
 export interface CreateAppointmentInput {
   barberId: number;
@@ -42,11 +44,6 @@ function withBookingLock<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 class SlotTakenError extends Error {}
-
-function isUniqueViolation(err: unknown): boolean {
-  const msg = err instanceof Error ? err.message : String(err);
-  return /UNIQUE constraint failed|SQLITE_CONSTRAINT/i.test(msg);
-}
 
 /**
  * Crea una cita validando todo en el servidor:
@@ -131,6 +128,13 @@ export async function createAppointment(
         return row;
       }),
     );
+    // La transacción ya confirmó: notificar. Nunca lanza; un fallo de email
+    // no afecta la reserva (ver src/lib/notifications.ts).
+    await Promise.all([
+      sendOwnerNewBookingAlert(appointment, ctx.barber, ctx.service),
+      sendBookingConfirmation(appointment, ctx.barber, ctx.service),
+    ]);
+
     return { ok: true, appointment };
   } catch (err) {
     if (err instanceof SlotTakenError || isUniqueViolation(err)) return slotTaken();
@@ -200,6 +204,12 @@ export async function cancelAppointmentByToken(
     .set({ status: 'cancelled', cancellationReason: reason ?? null })
     .where(eq(appointments.id, current.id));
 
-  const updated = await getAppointmentByToken(token, database);
-  return { ok: true, appointment: updated!, alreadyCancelled: false };
+  const updated = (await getAppointmentByToken(token, database))!;
+
+  // Cancelación hecha por el cliente desde su enlace: avisar (nunca lanza).
+  if (updated.barber && updated.service) {
+    await sendCancellationNotice(updated, updated.barber, updated.service, 'client');
+  }
+
+  return { ok: true, appointment: updated, alreadyCancelled: false };
 }

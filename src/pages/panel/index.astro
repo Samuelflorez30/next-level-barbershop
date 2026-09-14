@@ -1,0 +1,190 @@
+---
+// Dashboard del panel: horario, días libres y citas del barbero seleccionado.
+// Admin: además, vista consolidada de todas las citas con filtros.
+import PanelLayout from "../../layouts/PanelLayout.astro";
+import AppointmentsTable from "../../components/panel/AppointmentsTable.astro";
+import { getPanelContext } from "../../lib/panel-page";
+import {
+  DAY_NAMES,
+  STATUS_LABELS,
+  countAppointmentsByStatus,
+  getWeekSchedule,
+  listAppointments,
+  listTimeOff,
+} from "../../lib/panel";
+import { todayInBogota, utcToBogota } from "../../lib/time";
+import { APPOINTMENT_STATUSES, type AppointmentStatus } from "../../db/schema";
+import { STATUS_DOT } from "../../components/panel/status-styles";
+import { btnPrimary, card, eyebrow, h2, label as labelCls, link, select } from "../../components/panel/ui";
+
+const ctx = await getPanelContext(Astro);
+if (ctx instanceof Response) return ctx;
+const { user, barbers, selected, href } = ctx;
+
+const today = todayInBogota();
+
+const [schedule, timeOff, upcoming, counts] = await Promise.all([
+  getWeekSchedule(selected.id),
+  listTimeOff(selected.id, { from: new Date() }),
+  listAppointments({ barberId: selected.id, from: today, limit: 50 }),
+  countAppointmentsByStatus(selected.id),
+]);
+
+const byDay = DAY_NAMES.map((name, day) => ({
+  name,
+  ranges: schedule.filter((s) => s.dayOfWeek === day && s.isActive),
+}));
+
+const todayCount = upcoming.filter(
+  (a) => utcToBogota(a.startDatetime).date === today && (a.status === "confirmed" || a.status === "pending"),
+).length;
+
+// --- Vista consolidada (solo admin) -----------------------------------------
+const isAdmin = user.role === "admin";
+const q = Astro.url.searchParams;
+const fBarberRaw = q.get("fBarber") ?? "";
+const fBarber = fBarberRaw ? Number(fBarberRaw) : null;
+const fStatusRaw = q.get("fStatus") ?? "";
+const fStatus = APPOINTMENT_STATUSES.includes(fStatusRaw as AppointmentStatus) ? (fStatusRaw as AppointmentStatus) : undefined;
+const fFrom = q.get("from") ?? today;
+const fTo = q.get("to") ?? "";
+
+const allAppointments = isAdmin
+  ? await listAppointments({
+      barberId: Number.isInteger(fBarber) && fBarber ? fBarber : null,
+      status: fStatus,
+      from: fFrom || undefined,
+      to: fTo || undefined,
+      limit: 300,
+    })
+  : [];
+
+const fmtLocal = (d: Date) => {
+  const l = utcToBogota(d);
+  return `${l.date} ${l.time}`;
+};
+---
+
+<PanelLayout title="Panel" ctx={ctx} active="panel">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <p class={`${eyebrow} mb-1`}>{isAdmin ? "Viendo a" : "Bienvenido"}</p>
+      <h1 class="font-serif text-3xl font-bold text-white" data-selected-barber>{selected.name}</h1>
+    </div>
+    <div class="flex gap-3 text-center">
+      <div class="bg-zinc-900/50 border border-white/10 rounded-xl px-4 py-3 min-w-[110px]">
+        <div class="text-2xl font-bold text-[#D4AF37] tabular-nums" data-stat="today">{todayCount}</div>
+        <div class={eyebrow}>Citas hoy</div>
+      </div>
+      <div class="bg-zinc-900/50 border border-white/10 rounded-xl px-4 py-3 min-w-[110px]">
+        <div class="text-2xl font-bold text-white tabular-nums">{counts.confirmed ?? 0}</div>
+        <div class={eyebrow}>Confirmadas</div>
+      </div>
+      <div class="bg-zinc-900/50 border border-white/10 rounded-xl px-4 py-3 min-w-[110px]">
+        <div class="text-2xl font-bold text-white tabular-nums">{counts.completed ?? 0}</div>
+        <div class={eyebrow}>Completadas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Horario semanal -->
+    <section class={card} data-section="schedule">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class={h2}>Horario</h2>
+        <a href={href("/panel/horario")} class={link}>Editar →</a>
+      </div>
+      <ul class="space-y-2 text-sm">
+        {byDay.map((d, i) => (
+          <li class="flex justify-between gap-4" data-day={i}>
+            <span class="text-zinc-400">{d.name}</span>
+            <span class={`tabular-nums ${d.ranges.length ? "text-white" : "text-zinc-600"}`}>
+              {d.ranges.length ? d.ranges.map((r) => `${r.startTime}–${r.endTime}`).join(", ") : "Cerrado"}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <!-- Días libres -->
+    <section class={card} data-section="time-off">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class={h2}>Días libres</h2>
+        <a href={href("/panel/dias-libres")} class={link}>Gestionar →</a>
+      </div>
+      {timeOff.length === 0 ? (
+        <p class="text-zinc-500 text-sm">Sin bloqueos próximos.</p>
+      ) : (
+        <ul class="space-y-3 text-sm">
+          {timeOff.slice(0, 6).map((t) => (
+            <li class="border-l-2 border-[#D4AF37]/50 pl-3">
+              <div class="text-white">{fmtLocal(t.startDatetime)} → {fmtLocal(t.endDatetime)}</div>
+              <div class="text-xs text-zinc-500">
+                {t.barberId === null ? "Cierre del negocio" : t.reason ?? "Sin motivo"}
+                {t.barberId === null && t.reason ? ` · ${t.reason}` : ""}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <!-- Resumen -->
+    <section class={card}>
+      <h2 class={`${h2} mb-4`}>Resumen</h2>
+      <ul class="space-y-2.5 text-sm" data-summary-list>
+        {APPOINTMENT_STATUSES.map((s) => (
+          <li class="flex items-center justify-between gap-3" data-summary-status={s}>
+            <span class="flex items-center gap-2.5 text-zinc-400">
+              <span class={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[s]}`} aria-hidden="true"></span>
+              {STATUS_LABELS[s]}
+            </span>
+            <span class="text-white font-semibold tabular-nums">{counts[s] ?? 0}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <!-- Próximas citas del barbero seleccionado -->
+  <section class={`${card} mb-8`} data-section="upcoming">
+    <h2 class={`${h2} mb-4`}>Próximas citas · {selected.name}</h2>
+    <AppointmentsTable rows={upcoming} emptyText="No hay citas próximas." />
+  </section>
+
+  {isAdmin && (
+    <section class={card} data-section="all-appointments">
+      <h2 class={`${h2} mb-4`}>Todas las citas</h2>
+      <form method="get" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5 text-sm">
+        <input type="hidden" name="barberId" value={selected.id} />
+        <div>
+          <label for="fBarber" class={labelCls}>Barbero</label>
+          <select id="fBarber" name="fBarber" class={`${select} w-full`}>
+            <option value="">Todos</option>
+            {barbers.map((b) => <option value={b.id} selected={fBarber === b.id}>{b.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="fStatus" class={labelCls}>Estado</label>
+          <select id="fStatus" name="fStatus" class={`${select} w-full`}>
+            <option value="">Todos</option>
+            {APPOINTMENT_STATUSES.map((s) => <option value={s} selected={fStatus === s}>{STATUS_LABELS[s]}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="from" class={labelCls}>Desde</label>
+          <input id="from" type="date" name="from" value={fFrom} class={`${select} w-full tabular-nums`} />
+        </div>
+        <div>
+          <label for="to" class={labelCls}>Hasta</label>
+          <input id="to" type="date" name="to" value={fTo} class={`${select} w-full tabular-nums`} />
+        </div>
+        <div class="flex items-end gap-2 col-span-2 md:col-span-1">
+          <button type="submit" class={btnPrimary}>Filtrar</button>
+          <a href={href("/panel")} class={`${link} px-2 py-2.5`}>Limpiar</a>
+        </div>
+      </form>
+      <AppointmentsTable rows={allAppointments} showBarber highlightBarberId={selected.id} emptyText="Ninguna cita coincide con los filtros." />
+    </section>
+  )}
+</PanelLayout>

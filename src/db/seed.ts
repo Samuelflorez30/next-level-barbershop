@@ -171,10 +171,15 @@ const WEEKLY_SCHEDULE: { dayOfWeek: number; startTime: string; endTime: string }
   { dayOfWeek: 6, startTime: '10:00', endTime: '21:00' }, // domingo
 ];
 
-const ADMIN_EMAIL = 'davidflorezramirez1602@gmail.com';
+// El admin entra con su email real; los barberos con un usuario simple
+// derivado del slug (sin guiones): oswaravendano, stiventapia, …
+const ADMIN_USERNAME = 'reservasnextlevel@gmail.com';
+const barberUsername = (slug: string) => slug.replace(/-/g, '');
 
-// TODO: reemplazar por los emails reales de cada barbero.
-const barberEmail = (slug: string) => `${slug}@barbernextlevel.com`;
+// Usuarios creados por versiones anteriores del seed: se renombran en vez de
+// crear cuentas duplicadas (conservan contraseña, barbero y sesiones).
+const LEGACY_ADMIN_USERNAME = 'davidflorezramirez1602@gmail.com';
+const legacyBarberUsername = (slug: string) => `${slug}@barbernextlevel.com`;
 
 // ---------------------------------------------------------------------------
 // Seed
@@ -182,7 +187,7 @@ const barberEmail = (slug: string) => `${slug}@barbernextlevel.com`;
 
 const RESET_PASSWORDS = process.env.SEED_RESET_PASSWORDS === '1';
 
-type CredentialRow = { email: string; role: string; password: string };
+type CredentialRow = { username: string; role: string; password: string };
 
 async function seedBarbers() {
   for (const b of BARBERS) {
@@ -242,14 +247,24 @@ async function seedSchedules(barberIds: number[]) {
 }
 
 async function upsertUser(
-  email: string,
+  username: string,
   role: 'admin' | 'barber',
   barberId: number | null,
   credentials: CredentialRow[],
+  legacyUsername?: string,
 ) {
-  const existing = await db.query.users.findFirst({
-    where: eq(users.email, email),
+  let existing = await db.query.users.findFirst({
+    where: eq(users.username, username),
   });
+
+  if (!existing && legacyUsername) {
+    const legacy = await db.query.users.findFirst({ where: eq(users.username, legacyUsername) });
+    if (legacy) {
+      await db.update(users).set({ username }).where(eq(users.id, legacy.id));
+      console.log(`  usuario renombrado: ${legacyUsername} → ${username}`);
+      existing = { ...legacy, username };
+    }
+  }
 
   if (existing && !RESET_PASSWORDS) {
     // Mantener la contraseña actual; solo sincronizar rol/barbero.
@@ -266,9 +281,9 @@ async function upsertUser(
       .set({ role, barberId, passwordHash })
       .where(eq(users.id, existing.id));
   } else {
-    await db.insert(users).values({ email, role, barberId, passwordHash });
+    await db.insert(users).values({ username, role, barberId, passwordHash });
   }
-  credentials.push({ email, role, password });
+  credentials.push({ username, role, password });
 }
 
 async function main() {
@@ -296,9 +311,9 @@ async function main() {
   console.log(`  horarios:        ${schCount}`);
 
   const credentials: CredentialRow[] = [];
-  await upsertUser(ADMIN_EMAIL, 'admin', null, credentials);
+  await upsertUser(ADMIN_USERNAME, 'admin', null, credentials, LEGACY_ADMIN_USERNAME);
   for (const b of barberRows) {
-    await upsertUser(barberEmail(b.slug), 'barber', b.id, credentials);
+    await upsertUser(barberUsername(b.slug), 'barber', b.id, credentials, legacyBarberUsername(b.slug));
   }
   const [{ count: userCount }] = await db
     .select({ count: sql<number>`count(*)` })

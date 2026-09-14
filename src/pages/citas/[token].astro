@@ -1,0 +1,93 @@
+---
+// Página pública de una cita (enlace de los emails y del widget): ver y cancelar sin login.
+import Layout from "../../layouts/Layout.astro";
+import { getAppointmentByToken } from "../../lib/appointments";
+import { STATUS_LABELS } from "../../lib/panel";
+import { formatBogotaDate, formatBogotaTime } from "../../lib/whatsapp";
+
+const TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const token = Astro.params.token ?? "";
+const appointment = TOKEN_RE.test(token) ? await getAppointmentByToken(token) : null;
+if (!appointment) return new Response("Cita no encontrada", { status: 404 });
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const cop = new Intl.NumberFormat("es-CO");
+const cancellable = appointment.status === "confirmed" || appointment.status === "pending";
+const isPast = appointment.startDatetime.getTime() < Date.now();
+const rows = [
+  ["Servicio", appointment.service?.name ?? "—"],
+  ["Barbero", appointment.barber?.name ?? "—"],
+  ["Fecha", formatBogotaDate(appointment.startDatetime)],
+  ["Hora", `${formatBogotaTime(appointment.startDatetime)} – ${formatBogotaTime(appointment.endDatetime)}`],
+  ["Precio", `$${cop.format(appointment.price)}`],
+  ["Nombre", appointment.clientName],
+  ["Código", appointment.confirmationToken.slice(0, 8).toUpperCase()],
+];
+---
+
+<Layout title="Tu cita | Next Level Barbershop">
+  <main class="min-h-screen bg-zinc-950 pt-28 pb-20 px-4">
+    <div class="max-w-lg mx-auto bg-zinc-900/60 border border-white/10 rounded-2xl p-6 sm:p-8" data-appointment-page data-status={appointment.status}>
+      <p class="text-xs uppercase tracking-widest text-zinc-500 mb-1">Tu cita</p>
+      <h1 class="font-serif text-2xl md:text-3xl font-bold text-[#D4AF37] uppercase tracking-widest mb-4">
+        {STATUS_LABELS[appointment.status]}
+      </h1>
+
+      {appointment.status === "cancelled" && (
+        <p class="mb-6 border border-red-500/40 bg-red-500/10 text-red-200 text-sm rounded-md px-4 py-3">
+          Esta cita fue cancelada{appointment.cancellationReason ? `: ${appointment.cancellationReason}` : "."}
+        </p>
+      )}
+
+      <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm mb-8">
+        {rows.map(([term, value]) => (
+          <>
+            <dt class="text-zinc-500 uppercase tracking-widest text-xs self-center">{term}</dt>
+            <dd class="text-white">{value}</dd>
+          </>
+        ))}
+      </dl>
+
+      <div class="flex flex-wrap items-center gap-4">
+        {cancellable && !isPast ? (
+          <button
+            type="button"
+            data-cancel
+            class="px-6 py-3 border border-red-400/50 text-red-200 hover:bg-red-500/10 font-bold text-sm tracking-widest uppercase rounded-sm transition-colors disabled:opacity-50"
+          >
+            Cancelar cita
+          </button>
+        ) : cancellable && isPast ? (
+          <span class="text-zinc-500 text-sm">Esta cita ya pasó.</span>
+        ) : null}
+        <a href="/#reservar" class="text-xs tracking-widest uppercase text-zinc-400 hover:text-[#D4AF37]">Reservar otra cita →</a>
+      </div>
+      <p data-message class="text-sm mt-4" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <script>
+    const btn = document.querySelector<HTMLButtonElement>("[data-cancel]");
+    const message = document.querySelector<HTMLElement>("[data-message]")!;
+    btn?.addEventListener("click", async () => {
+      const reason = prompt("¿Quieres contarnos el motivo? (opcional)", "");
+      if (reason === null) return;
+      btn.disabled = true;
+      const token = location.pathname.split("/").pop();
+      const res = await fetch(`/api/appointments/${token}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel", reason: reason || null }),
+      });
+      if (res.ok) {
+        location.reload();
+      } else {
+        const data = await res.json().catch(() => null);
+        message.textContent = data?.error?.message ?? "No se pudo cancelar la cita.";
+        message.className = "text-sm mt-4 text-red-300";
+        btn.disabled = false;
+      }
+    });
+  </script>
+</Layout>

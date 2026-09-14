@@ -1,0 +1,137 @@
+---
+// Días libres / bloqueos (barber_time_off) del barbero seleccionado.
+import PanelLayout from "../../layouts/PanelLayout.astro";
+import { getPanelContext } from "../../lib/panel-page";
+import { listTimeOff } from "../../lib/panel";
+import { utcToBogota } from "../../lib/time";
+import { btnPrimary, btnDanger, card, checkbox, eyebrow, h2, input as inputCls, label as labelCls, link } from "../../components/panel/ui";
+
+const ctx = await getPanelContext(Astro);
+if (ctx instanceof Response) return ctx;
+const { user, selected, href } = ctx;
+
+const showPast = Astro.url.searchParams.get("past") === "1";
+const rows = await listTimeOff(selected.id, showPast ? {} : { from: new Date() });
+
+const fmt = (d: Date) => {
+  const l = utcToBogota(d);
+  return `${l.date} ${l.time}`;
+};
+const isAdmin = user.role === "admin";
+---
+
+<PanelLayout title="Días libres" ctx={ctx} active="dias-libres">
+  <div class="max-w-4xl">
+    <p class={`${eyebrow} mb-1`}>Días libres y bloqueos</p>
+    <h1 class="font-serif text-3xl font-bold text-white mb-2">{selected.name}</h1>
+    <p class="text-zinc-400 text-sm mb-8">
+      Bloquea vacaciones, citas médicas o cualquier rango en que no atiendes.
+      Durante un bloqueo no se ofrecen turnos.
+    </p>
+
+    <form id="time-off-form" data-barber-id={isAdmin ? selected.id : ""} class={`${card} mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4`}>
+      <div>
+        <label for="startLocal" class={labelCls}>Desde (hora local)</label>
+        <input id="startLocal" type="datetime-local" name="startLocal" required step="900" class={`${inputCls} tabular-nums`} />
+      </div>
+      <div>
+        <label for="endLocal" class={labelCls}>Hasta (hora local)</label>
+        <input id="endLocal" type="datetime-local" name="endLocal" required step="900" class={`${inputCls} tabular-nums`} />
+      </div>
+      <div class="sm:col-span-2">
+        <label for="reason" class={labelCls}>Motivo (opcional)</label>
+        <input id="reason" type="text" name="reason" maxlength="200" placeholder="Vacaciones, cita médica…" class={inputCls} />
+      </div>
+      {isAdmin && (
+        <label class="flex items-center gap-3 text-sm sm:col-span-2 cursor-pointer select-none">
+          <input type="checkbox" name="global" class={checkbox} />
+          <span class="text-zinc-300">Cierre de <strong class="text-white">todo el negocio</strong> (aplica a todos los barberos)</span>
+        </label>
+      )}
+      <div class="sm:col-span-2 flex flex-wrap items-center gap-4">
+        <button type="submit" class={btnPrimary}>Agregar bloqueo</button>
+        <span data-message class="text-sm" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <div class="flex items-center justify-between mb-3">
+      <h2 class={h2}>{showPast ? "Todos los bloqueos" : "Próximos bloqueos"}</h2>
+      <a href={href("/panel/dias-libres", showPast ? {} : { past: "1" })} class={link}>
+        {showPast ? "Solo próximos" : "Ver pasados"}
+      </a>
+    </div>
+
+    {rows.length === 0 ? (
+      <p class="text-zinc-500 text-sm py-8 text-center bg-zinc-900/30 border border-white/5 rounded-2xl">No hay bloqueos.</p>
+    ) : (
+      <ul class="divide-y divide-white/5 bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden" data-time-off-list>
+        {rows.map((t) => {
+          const isGlobal = t.barberId === null;
+          const canDelete = isAdmin || !isGlobal;
+          return (
+            <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-sm" data-time-off={t.id}>
+              <div>
+                <div class="text-white tabular-nums">{fmt(t.startDatetime)} <span class="text-zinc-500">→</span> {fmt(t.endDatetime)}</div>
+                <div class="text-xs text-zinc-500">
+                  {isGlobal ? <span class="text-[#D4AF37]">Cierre del negocio</span> : (isAdmin ? t.barber?.name : null)}
+                  {t.reason ? `${isGlobal || isAdmin ? " · " : ""}${t.reason}` : (!isGlobal && !isAdmin ? "Sin motivo" : "")}
+                </div>
+              </div>
+              {canDelete ? (
+                <button type="button" data-delete={t.id} class={`${btnDanger} px-3 py-1.5`}>Eliminar</button>
+              ) : (
+                <span class={eyebrow}>Solo admin</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </div>
+
+  <script>
+    const form = document.getElementById("time-off-form") as HTMLFormElement;
+    const message = form.querySelector<HTMLElement>("[data-message]")!;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const body: Record<string, unknown> = {
+        startLocal: fd.get("startLocal"),
+        endLocal: fd.get("endLocal"),
+        reason: fd.get("reason") || null,
+      };
+      if (fd.get("global") === "on") body.barberId = null;
+      else if (form.dataset.barberId) body.barberId = Number(form.dataset.barberId);
+
+      message.textContent = "Guardando…";
+      message.className = "text-sm text-zinc-400";
+      const res = await fetch("/api/panel/time-off", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        location.reload();
+      } else {
+        const data = await res.json().catch(() => null);
+        message.textContent = data?.error?.message ?? "No se pudo guardar.";
+        message.className = "text-sm text-red-300";
+      }
+    });
+
+    document.addEventListener("click", async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-delete]");
+      if (!btn) return;
+      if (!confirm("¿Eliminar este bloqueo?")) return;
+      btn.disabled = true;
+      const res = await fetch(`/api/panel/time-off/${btn.dataset.delete}`, { method: "DELETE" });
+      if (res.ok) location.reload();
+      else {
+        const data = await res.json().catch(() => null);
+        alert(data?.error?.message ?? "No se pudo eliminar.");
+        btn.disabled = false;
+      }
+    });
+  </script>
+</PanelLayout>

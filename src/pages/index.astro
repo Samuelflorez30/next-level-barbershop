@@ -6,8 +6,12 @@ import Team from "../components/Team.astro";
 import Footer from "../components/Footer.astro";
 import Reservation from "../components/Reservation.astro";
 
-// La landing sigue siendo estática aunque el proyecto esté en output: "server".
-export const prerender = true;
+// La home se renderiza en el servidor (Team y Services leen la DB) y el CDN de
+// Vercel la cachea 60 s, así que los cambios del admin aparecen en ≤1 min.
+Astro.response.headers.set(
+	"Cache-Control",
+	"public, s-maxage=60, stale-while-revalidate=600",
+);
 ---
 
 <Layout title="Next Level Barbershop | La Mejor Barberia de Neiva">

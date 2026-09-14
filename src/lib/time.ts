@@ -66,6 +66,11 @@ export function utcToBogota(instant: Date): { date: string; time: string } {
   };
 }
 
+/** Fecha de hoy en Bogotá, "YYYY-MM-DD". */
+export function todayInBogota(now: Date = new Date()): string {
+  return utcToBogota(now).date;
+}
+
 /** Día de la semana de una fecha local: 0 = lunes … 6 = domingo. */
 export function bogotaDayOfWeek(date: string): number {
   const [y, m, d] = parseDate(date);

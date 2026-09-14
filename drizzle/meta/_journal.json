@@ -22,6 +22,20 @@
       "when": 1789336483396,
       "tag": "0002_ambiguous_randall",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789344881292,
+      "tag": "0003_moaning_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789352237004,
+      "tag": "0004_rename_users_email_to_username",
+      "breakpoints": true
     }
   ]
 }
