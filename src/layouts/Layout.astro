@@ -7,14 +7,17 @@ import Preloader from "../components/Preloader.astro";
 
 interface Props {
     title: string;
+    /** Páginas privadas/funcionales (p. ej. /citas/<token>): no indexar. */
+    noindex?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, noindex = false } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="es">
     <head>
+        {noindex && <meta name="robots" content="noindex, nofollow" />}
         <script
             async
             src="https://www.googletagmanager.com/gtag/js?id=G-G2XGMLSRPM"

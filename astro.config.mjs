@@ -18,7 +18,10 @@ export default defineConfig({
   // React se usa únicamente para la isla BookingWidget; el resto es Astro + JS plano.
   integrations: [
     react(),
-    // En modo server el sitemap solo lista páginas prerenderizadas; la home es SSR.
-    sitemap({ customPages: ['https://barbernextlevel.com/'] }),
+    // Solo la home es indexable: el panel, el login y las citas quedan fuera
+    // del sitemap (y con noindex + robots.txt).
+    sitemap({
+      filter: (page) => !/\/(login|panel|citas|api)(\/|$)/.test(new URL(page).pathname),
+    }),
   ]
 });

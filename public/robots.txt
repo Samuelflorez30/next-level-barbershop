@@ -1,0 +1,11 @@
+# Next Level Barbershop
+# Solo la home es contenido público indexable. El panel, el login, la API y
+# las páginas de citas (datos de clientes) no deben aparecer en buscadores.
+User-agent: *
+Allow: /
+Disallow: /panel
+Disallow: /login
+Disallow: /api/
+Disallow: /citas/
+
+Sitemap: https://barbernextlevel.com/sitemap-index.xml
