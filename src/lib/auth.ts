@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { eq, lt } from 'drizzle-orm';
+import { and, eq, lt, ne } from 'drizzle-orm';
 import type { AstroCookies } from 'astro';
 import { db as defaultDb, type Database } from '../db/client';
-import { sessions, users, type Session, type User, type UserRole } from '../db/schema';
+import { barbers, sessions, users, type Session, type User, type UserRole } from '../db/schema';
 import { hashPassword, needsRehash, verifyPassword } from './password';
 
 /** Usuario autenticado tal como lo expone el middleware en `Astro.locals.user`. */
@@ -33,8 +33,8 @@ export function toSessionUser(user: User): SessionUser {
 
 /**
  * Verifica usuario + contraseña. Devuelve el usuario o null (mismo resultado
- * para "no existe" y "contraseña incorrecta"). Si el hash es scrypt heredado,
- * lo migra a bcrypt de forma transparente.
+ * para "no existe", "contraseña incorrecta" y "barbero desactivado"). Si el
+ * hash es scrypt heredado, lo migra a bcrypt de forma transparente.
  */
 export async function authenticate(
   username: string,
@@ -51,6 +51,16 @@ export async function authenticate(
 
   const ok = await verifyPassword(password, user.passwordHash);
   if (!ok) return null;
+
+  // Un barbero desactivado desde el panel no puede entrar (misma respuesta
+  // que una contraseña incorrecta). Se reactiva sin tocar su contraseña.
+  if (user.role === 'barber' && user.barberId !== null) {
+    const barber = await database.query.barbers.findFirst({
+      columns: { isActive: true },
+      where: eq(barbers.id, user.barberId),
+    });
+    if (barber && !barber.isActive) return null;
+  }
 
   if (needsRehash(user.passwordHash)) {
     const passwordHash = await hashPassword(password);
@@ -111,9 +121,45 @@ export async function invalidateSession(token: string, database: Database = defa
   await database.delete(sessions).where(eq(sessions.id, hashToken(token)));
 }
 
-/** Cierra todas las sesiones de un usuario (p. ej. al cambiar contraseña). */
+/** Cierra todas las sesiones de un usuario (p. ej. al desactivarlo o resetear su contraseña). */
 export async function invalidateUserSessions(userId: number, database: Database = defaultDb) {
   await database.delete(sessions).where(eq(sessions.userId, userId));
+}
+
+/** Cierra las demás sesiones de un usuario conservando la del token indicado. */
+export async function invalidateOtherUserSessions(
+  userId: number,
+  keepToken: string,
+  database: Database = defaultDb,
+) {
+  await database
+    .delete(sessions)
+    .where(and(eq(sessions.userId, userId), ne(sessions.id, hashToken(keepToken))));
+}
+
+export type ChangePasswordResult = { ok: true } | { ok: false; code: 'WRONG_PASSWORD' | 'USER_NOT_FOUND' };
+
+/**
+ * Cambio de contraseña desde "Mi cuenta": exige la contraseña actual y, al
+ * cambiarla, cierra las demás sesiones del usuario conservando la actual
+ * (`keepToken`) para no expulsarlo en el acto.
+ */
+export async function changePassword(
+  userId: number,
+  currentPassword: string,
+  newPassword: string,
+  keepToken: string | null,
+  database: Database = defaultDb,
+): Promise<ChangePasswordResult> {
+  const user = await database.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!user) return { ok: false, code: 'USER_NOT_FOUND' };
+  if (!(await verifyPassword(currentPassword, user.passwordHash))) return { ok: false, code: 'WRONG_PASSWORD' };
+
+  const passwordHash = await hashPassword(newPassword);
+  await database.update(users).set({ passwordHash }).where(eq(users.id, userId));
+  if (keepToken) await invalidateOtherUserSessions(userId, keepToken, database);
+  else await invalidateUserSessions(userId, database);
+  return { ok: true };
 }
 
 /** Limpieza oportunista de sesiones vencidas. */

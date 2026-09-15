@@ -28,6 +28,8 @@ export class PanelError extends Error {
     public readonly status: 400 | 403 | 404 | 409 | 422,
     public readonly code: string,
     message: string,
+    /** Detalle opcional para el cliente (p. ej. errores por campo `{ campo: [mensajes] }`). */
+    public readonly details?: unknown,
   ) {
     super(message);
     this.name = 'PanelError';

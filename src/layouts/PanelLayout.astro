@@ -4,19 +4,25 @@ import "../styles/global.css";
 import type { PanelContext } from "../lib/panel-page";
 import { btnSecondary, focusRing, select } from "../components/panel/ui";
 
+type NavKey = "panel" | "horario" | "dias-libres" | "barberos" | "cuenta";
+
 interface Props {
   title: string;
   ctx: PanelContext;
-  active: "panel" | "horario" | "dias-libres";
+  active: NavKey;
 }
 const { title, ctx, active } = Astro.props;
 const { user, barbers, selected, href } = ctx;
 
-const nav = [
-  { key: "panel", label: "Panel", path: "/panel" },
-  { key: "horario", label: "Horario", path: "/panel/horario" },
-  { key: "dias-libres", label: "Días libres", path: "/panel/dias-libres" },
-] as const;
+// `perBarber`: la sección depende del barbero seleccionado (conserva ?barberId=).
+// "Barberos" (gestión del equipo) solo existe para el admin; "Mi cuenta" para todos.
+const nav: { key: NavKey; label: string; path: string; perBarber: boolean }[] = [
+  { key: "panel", label: "Panel", path: "/panel", perBarber: true },
+  { key: "horario", label: "Horario", path: "/panel/horario", perBarber: true },
+  { key: "dias-libres", label: "Días libres", path: "/panel/dias-libres", perBarber: true },
+  ...(user.role === "admin" ? [{ key: "barberos" as const, label: "Barberos", path: "/panel/barberos", perBarber: false }] : []),
+  { key: "cuenta", label: "Mi cuenta", path: "/panel/cuenta", perBarber: false },
+];
 
 const linkBase = `px-3 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition-colors ${focusRing}`;
 ---
@@ -41,7 +47,7 @@ const linkBase = `px-3 py-2 rounded-md text-xs font-bold tracking-widest upperca
         <nav class="order-3 md:order-none w-full md:w-auto flex items-center gap-1 -mx-1 overflow-x-auto" aria-label="Secciones del panel">
           {nav.map((item) => (
             <a
-              href={href(item.path)}
+              href={item.perBarber ? href(item.path) : item.path}
               class={`${linkBase} whitespace-nowrap ${active === item.key ? "bg-[#D4AF37] text-black" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
               aria-current={active === item.key ? "page" : undefined}
             >
@@ -65,10 +71,10 @@ const linkBase = `px-3 py-2 rounded-md text-xs font-bold tracking-widest upperca
               </select>
             </label>
           )}
-          <span class="hidden lg:flex flex-col items-end leading-tight">
+          <a href="/panel/cuenta" class={`hidden lg:flex flex-col items-end leading-tight rounded-sm ${focusRing}`} title="Mi cuenta">
             <span class="text-xs text-zinc-300">{user.username}</span>
             <span class="text-[10px] uppercase tracking-widest text-[#D4AF37]">{user.role === "admin" ? "Administrador" : selected.name}</span>
-          </span>
+          </a>
           <form method="post" action="/api/auth/logout">
             <button type="submit" class={`${btnSecondary} px-3 py-2 rounded-md`}>
               Salir

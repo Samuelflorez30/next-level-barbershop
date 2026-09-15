@@ -1,0 +1,140 @@
+---
+// Alta de barbero (solo admin): un solo formulario en tres bloques. Al
+// crear, la misma página muestra la pantalla de éxito con las credenciales
+// (usuario + contraseña temporal), que solo se enseñan una vez.
+import PanelLayout from "../../../layouts/PanelLayout.astro";
+import BarberFields from "../../../components/panel/BarberFields.astro";
+import CredentialsCard from "../../../components/panel/CredentialsCard.astro";
+import { getAdminPanelContext } from "../../../lib/panel-page";
+import { listActiveServices, listUsernames } from "../../../lib/barbers-admin";
+import { btnPrimary, card, eyebrow, h2, input as inputCls, label as labelCls, link } from "../../../components/panel/ui";
+
+const ctx = await getAdminPanelContext(Astro);
+if (ctx instanceof Response) return ctx;
+
+// Los usuarios ya tomados permiten sugerir en pantalla un usuario libre
+// (misma regla que el servidor: carlosperez, carlosperez2, …).
+const [services, usernames] = await Promise.all([listActiveServices(), listUsernames()]);
+---
+
+<PanelLayout title="Nuevo barbero" ctx={ctx} active="barberos">
+  <div class="max-w-3xl">
+    <div data-create>
+      <a href="/panel/barberos" class={link}>← Volver al equipo</a>
+      <p class={`${eyebrow} mt-5 mb-1`}>Equipo</p>
+      <h1 class="font-serif text-3xl font-bold text-white mb-2">Nuevo barbero</h1>
+      <p class="text-zinc-400 text-sm mb-8">
+        Completa los datos y pulsa «Crear barbero». Su horario de atención se crea con el estándar del
+        negocio (lunes a sábado 09:00–21:00, domingo 10:00–21:00) y lo puedes ajustar después.
+      </p>
+
+      <form id="barber-form" data-usernames={JSON.stringify(usernames)} class="space-y-6" novalidate>
+        <BarberFields services={services} />
+
+        <section class={card} aria-labelledby="barber-access-title">
+          <h2 id="barber-access-title" class={`${h2} mb-1`}>Acceso al panel</h2>
+          <p class="text-zinc-500 text-sm mb-5">Con esto el barbero entra a su propio panel para ver sus citas y su horario.</p>
+          <div class="max-w-sm">
+            <label for="username" class={labelCls}>Usuario</label>
+            <input id="username" name="username" type="text" maxlength="40" autocomplete="off" autocapitalize="none" spellcheck="false" class={`${inputCls} font-mono`} placeholder="carlosperez" />
+            <p class="text-xs text-zinc-500 mt-1.5">Se sugiere a partir del nombre: solo letras y números, sin espacios ni tildes. Puedes cambiarlo.</p>
+            <p data-error-for="username" hidden class="text-xs text-red-300 mt-1.5"></p>
+          </div>
+          <p class="mt-5 flex items-start gap-2 text-sm text-zinc-300 bg-zinc-950 border border-white/10 rounded-md px-4 py-3">
+            <span class="text-[#D4AF37]" aria-hidden="true">🔑</span>
+            <span>La contraseña se genera automáticamente y te la mostraremos <strong class="text-white">una sola vez</strong> al guardar.</span>
+          </p>
+        </section>
+
+        <div class="flex flex-wrap items-center gap-4 pt-2">
+          <button type="submit" class={btnPrimary} data-save>Crear barbero</button>
+          <span data-message class="text-sm" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
+
+    <section data-success hidden aria-live="polite">
+      <p class={`${eyebrow} mb-1`}>Equipo</p>
+      <h1 class="font-serif text-3xl font-bold text-white mb-2">
+        <span class="text-emerald-300" aria-hidden="true">✔</span>
+        <span data-success-name></span> ya está en el equipo
+      </h1>
+      <p class="text-zinc-400 text-sm mb-8">
+        Envíale estos datos para que pueda entrar al panel. Al entrar debe cambiar la contraseña en «Mi cuenta».
+      </p>
+      <CredentialsCard />
+      <div class="flex flex-wrap gap-6 mt-8">
+        <a data-success-schedule href="/panel/horario" class={`${link} text-[#D4AF37] hover:text-white`}>Ajustar su horario →</a>
+        <a href="/panel/barberos" class={link}>Ver equipo →</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    import { usernameFromName, withUniqueSuffix } from "../../../lib/barber-names";
+    import { fillCredentials, type Credentials } from "../../../components/panel/credentials";
+    import { clearFieldErrors, sendJson, setMessage, showFieldErrors } from "../../../components/panel/form";
+
+    type CreatedBarber = { id: number; name: string; phoneWhatsapp: string };
+
+    const form = document.getElementById("barber-form") as HTMLFormElement;
+    const message = form.querySelector<HTMLElement>("[data-message]")!;
+    const save = form.querySelector<HTMLButtonElement>("[data-save]")!;
+    const nameInput = form.elements.namedItem("name") as HTMLInputElement;
+    const usernameInput = form.elements.namedItem("username") as HTMLInputElement;
+    const taken = new Set<string>(JSON.parse(form.dataset.usernames ?? "[]"));
+
+    // Usuario sugerido mientras se escribe el nombre; si el admin lo edita a
+    // mano deja de sugerirse (y vuelve a sugerirse si lo borra).
+    let usernameEdited = false;
+    function suggestUsername() {
+      if (usernameEdited) return;
+      const name = nameInput.value.trim();
+      usernameInput.value = name ? withUniqueSuffix(usernameFromName(name), (c) => taken.has(c)) : "";
+    }
+    nameInput.addEventListener("input", suggestUsername);
+    usernameInput.addEventListener("input", () => {
+      usernameEdited = usernameInput.value.trim() !== "";
+      if (!usernameEdited) suggestUsername();
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFieldErrors(form);
+      const fd = new FormData(form);
+      const body = {
+        name: fd.get("name"),
+        role: fd.get("role"),
+        quote: fd.get("quote"),
+        phoneWhatsapp: fd.get("phoneWhatsapp"),
+        photoUrl: fd.get("photoUrl"),
+        serviceIds: fd.getAll("serviceIds").map(Number),
+        username: String(fd.get("username") ?? "").trim() || undefined,
+      };
+
+      save.disabled = true;
+      setMessage(message, "Creando…", "pending");
+      const res = await sendJson<{ barber: CreatedBarber; credentials: Credentials }>("/api/panel/barbers", "POST", body);
+      save.disabled = false;
+
+      if (!res.ok) {
+        const shown = showFieldErrors(form, res.error?.details);
+        setMessage(message, shown ? "Revisa los campos marcados." : (res.error?.message ?? "No se pudo crear el barbero."), "error");
+        return;
+      }
+
+      const { barber, credentials } = res.data;
+      const success = document.querySelector<HTMLElement>("[data-success]")!;
+      success.querySelector<HTMLElement>("[data-success-name]")!.textContent = barber.name;
+      success.querySelector<HTMLAnchorElement>("[data-success-schedule]")!.href = `/panel/horario?barberId=${barber.id}`;
+      fillCredentials(success.querySelector<HTMLElement>("[data-credentials]")!, {
+        barberName: barber.name,
+        phone: barber.phoneWhatsapp,
+        credentials,
+      });
+      document.querySelector<HTMLElement>("[data-create]")!.hidden = true;
+      success.hidden = false;
+      window.scrollTo({ top: 0 });
+    });
+  </script>
+</PanelLayout>

@@ -2,6 +2,7 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "../db/client";
 import { barbers } from "../db/schema";
+import Avatar from "./Avatar.astro";
 
 // Barberos activos desde la base de datos (seed de Fase 1, editables en el admin).
 const team = await db.query.barbers.findMany({
@@ -44,13 +45,20 @@ const INSTAGRAM_BY_SLUG: Record<string, string> = {
 			{
 				team.map((barber) => (
 					<div class="team-card group relative overflow-hidden rounded-2xl cursor-pointer aspect-[3/4] shadow-2xl">
-						{/* Imagen Base */}
-						<img
-							src={barber.photoUrl ?? "/logo.jpg"}
-							alt={`Retrato de ${barber.name}`}
-							class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-in-out will-change-transform hover-device:group-hover:scale-105"
-							loading="lazy"
-						/>
+						{/* Imagen Base: foto (ruta en /public o URL) o, sin foto, iniciales en círculo dorado */}
+						{barber.photoUrl ? (
+							<img
+								src={barber.photoUrl}
+								alt={`Retrato de ${barber.name}`}
+								class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-in-out will-change-transform hover-device:group-hover:scale-105"
+								loading="lazy"
+							/>
+						) : (
+							<div class="absolute inset-0 bg-zinc-900 flex items-center justify-center pb-[28%] transition-transform duration-700 ease-in-out will-change-transform hover-device:group-hover:scale-105">
+								<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.12),transparent_60%)]" />
+								<Avatar name={barber.name} class="relative w-32 h-32 md:w-36 md:h-36 text-5xl" />
+							</div>
+						)}
 
 						{/* Degradado Superpuesto para Texto */}
 						<div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 hover-device:opacity-90 hover-device:group-hover:opacity-70 transition-opacity duration-500" />

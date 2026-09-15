@@ -119,11 +119,25 @@ Guárdalas: no se vuelven a mostrar. Con ellas entras al panel en `/login`
 (el admin ve y edita a todos los barberos; cada barbero solo lo suyo).
 
 El seed es idempotente: puedes ejecutarlo varias veces. Los usuarios que ya
-existen conservan su contraseña. Para regenerarlas:
+existen conservan su contraseña. Para regenerarlas (solo si de verdad quieres
+invalidar TODAS las contraseñas actuales):
 
 ```sh
 SEED_RESET_PASSWORDS=1 npm run db:seed
 ```
+
+Los barberos nuevos no se agregan al seed: se crean desde el panel
+(**Barberos → Nuevo barbero**, solo admin). Allí se crea el barbero con sus
+servicios, su horario por defecto (el mismo `WEEKLY_SCHEDULE` del seed, en
+`src/lib/barber-defaults.ts`) y su usuario con contraseña temporal, que se
+muestra una sola vez. Cada usuario cambia su contraseña en **Mi cuenta**.
+
+### Fotos de barberos
+
+No hay subida de archivos. Coloca la imagen en `/public` (p. ej.
+`public/carlos.jpg`) y escribe la ruta (`/carlos.jpg`) en el campo **Foto** del
+barbero en el panel; también sirve una URL completa (`https://…`). Sin foto, la
+web y el panel muestran un círculo dorado con sus iniciales.
 
 > El login no valida formato de email: los barberos usan su nombre de usuario
 > simple y el admin su correo. Si la base tiene usuarios de un seed anterior
@@ -167,16 +181,19 @@ drizzle/               # migraciones SQL generadas (commitear)
 src/db/schema.ts       # definición de tablas, relaciones y tipos
 src/db/client.ts       # instancia única de Drizzle conectada a Turso
 src/db/seed.ts         # datos iniciales
-src/lib/password.ts    # hash/verificación de contraseñas (scrypt)
+src/lib/password.ts    # hash/verificación de contraseñas (bcrypt; scrypt heredado)
 src/lib/time.ts        # conversión hora local Bogotá ⇄ UTC
 src/lib/availability.ts# cálculo de slots disponibles
 src/lib/appointments.ts# crear / consultar / cancelar citas
 src/lib/whatsapp.ts    # enlaces y mensajes de WhatsApp (servidor y navegador)
 src/lib/notifications.ts # emails con Resend (nunca lanzan)
-src/lib/auth.ts        # login, sesiones (tabla sessions) y cookie
+src/lib/auth.ts        # login, sesiones (tabla sessions), cookie y cambio de contraseña
 src/lib/panel.ts       # autorización por rol + horarios / días libres / citas
+src/lib/barbers-admin.ts # alta / edición / activar-desactivar barberos (solo admin)
+src/lib/barber-defaults.ts # horario semanal y rol por defecto (seed + alta desde el panel)
+src/lib/barber-names.ts  # usuario, slug e iniciales a partir del nombre (servidor y navegador)
 src/middleware.ts      # protege /panel/** y /api/panel/**, expone locals.user
-src/pages/panel/       # dashboard, horario, días libres (Astro + JS plano)
+src/pages/panel/       # dashboard, horario, días libres, barberos, mi cuenta (Astro + JS plano)
 src/pages/citas/       # /citas/<token>: el cliente ve y cancela su cita (enlace de los emails)
 src/components/booking # BookingWidget.tsx (isla React) + cliente de la API
 src/pages/api/         # endpoints REST (ver docs/API.md)

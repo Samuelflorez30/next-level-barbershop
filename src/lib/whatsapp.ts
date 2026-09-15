@@ -75,3 +75,26 @@ export function buildAppointmentConfirmationMessage({
     `Código de reserva: ${confirmationToken.slice(0, 8).toUpperCase()}`,
   ].join('\n');
 }
+
+// ---------------------------------------------------------------------------
+// Acceso al panel (admin → barbero nuevo o tras generar contraseña nueva)
+// ---------------------------------------------------------------------------
+
+/** Enlace fijo de inicio de sesión que se envía por WhatsApp. */
+export const PANEL_LOGIN_URL = 'https://www.barbernextlevel.com/login';
+
+export interface PanelAccessMessageInput {
+  barberName: string;
+  username: string;
+  password: string;
+}
+
+/** Mensaje con usuario y contraseña temporal para que el barbero entre al panel. */
+export function buildPanelAccessMessage({ barberName, username, password }: PanelAccessMessageInput): string {
+  return [
+    `Hola ${firstName(barberName)}, este es tu acceso al panel de Next Level Barbershop:`,
+    `Usuario: ${username}`,
+    `Contraseña temporal: ${password}`,
+    `Entra en ${PANEL_LOGIN_URL} y cámbiala al entrar en "Mi cuenta".`,
+  ].join('\n');
+}

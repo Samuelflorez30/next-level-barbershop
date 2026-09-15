@@ -1,0 +1,36 @@
+---
+// Avatar circular de un barbero: su foto si `photoUrl` tiene valor, y si no
+// un círculo dorado con sus iniciales. Se usa en la web pública (Team.astro)
+// y en el panel. El <img src> funciona igual con rutas de /public
+// ("/oswar2.jpg") y con URLs absolutas (https://…).
+import { initials } from "../lib/barber-names";
+
+interface Props {
+  name: string;
+  photoUrl?: string | null;
+  /** Tamaño y tipografía (p. ej. "w-16 h-16 text-xl"). */
+  class?: string;
+  loading?: "lazy" | "eager";
+}
+const { name, photoUrl, class: className = "w-12 h-12 text-base", loading = "lazy" } = Astro.props;
+const photo = photoUrl?.trim() || null;
+---
+
+{photo ? (
+  <img
+    src={photo}
+    alt={`Retrato de ${name}`}
+    loading={loading}
+    class={`rounded-full object-cover shrink-0 bg-zinc-800 ${className}`}
+    data-avatar="photo"
+  />
+) : (
+  <span
+    role="img"
+    aria-label={name}
+    class={`inline-flex items-center justify-center rounded-full bg-[#D4AF37] text-black font-serif font-bold tracking-wider select-none shrink-0 ${className}`}
+    data-avatar="initials"
+  >
+    {initials(name)}
+  </span>
+)}

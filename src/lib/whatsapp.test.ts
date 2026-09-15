@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  PANEL_LOGIN_URL,
   buildAppointmentConfirmationMessage,
+  buildPanelAccessMessage,
   buildServiceInquiryMessage,
   buildWhatsAppUrl,
   formatBogotaDate,
@@ -44,5 +46,19 @@ describe('whatsapp helpers', () => {
     expect(msg).toMatch(/10:00 a\.\s?m\.\n/);
     expect(msg).not.toContain('..');
     expect(msg).toContain('Código de reserva: C3B253BE');
+  });
+
+  it('arma el mensaje de acceso al panel para un barbero nuevo', () => {
+    const text = buildPanelAccessMessage({ barberName: 'Carlos Pérez', username: 'carlosperez', password: 'zX0Dj6p4j6_P' });
+    expect(text).toBe(
+      [
+        'Hola Carlos, este es tu acceso al panel de Next Level Barbershop:',
+        'Usuario: carlosperez',
+        'Contraseña temporal: zX0Dj6p4j6_P',
+        `Entra en ${PANEL_LOGIN_URL} y cámbiala al entrar en "Mi cuenta".`,
+      ].join('\n'),
+    );
+    expect(PANEL_LOGIN_URL).toBe('https://www.barbernextlevel.com/login');
+    expect(buildWhatsAppUrl('573142915681', text)).toMatch(/^https:\/\/wa\.me\/573142915681\?text=Hola%20Carlos/);
   });
 });

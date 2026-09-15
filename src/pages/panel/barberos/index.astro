@@ -1,0 +1,110 @@
+---
+// Equipo (solo admin): una tarjeta por barbero con foto o iniciales, estado
+// y accesos a editar / activar / desactivar. No hay borrado.
+import PanelLayout from "../../../layouts/PanelLayout.astro";
+import Avatar from "../../../components/Avatar.astro";
+import ActiveBadge from "../../../components/panel/ActiveBadge.astro";
+import { getAdminPanelContext } from "../../../lib/panel-page";
+import { listBarbersAdmin } from "../../../lib/barbers-admin";
+import { btnDanger, btnPrimary, btnSecondary, card, eyebrow } from "../../../components/panel/ui";
+
+const ctx = await getAdminPanelContext(Astro);
+if (ctx instanceof Response) return ctx;
+
+// Activos primero; los inactivos al final, atenuados.
+const team = await listBarbersAdmin();
+const activeCount = team.filter((b) => b.isActive).length;
+---
+
+<PanelLayout title="Barberos" ctx={ctx} active="barberos">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <p class={`${eyebrow} mb-1`}>Equipo</p>
+      <h1 class="font-serif text-3xl font-bold text-white mb-2">Barberos</h1>
+      <p class="text-zinc-400 text-sm max-w-2xl">
+        {activeCount} {activeCount === 1 ? "activo" : "activos"} de {team.length}. Un barbero inactivo no aparece en la
+        página web, no recibe reservas nuevas y no puede iniciar sesión; sus citas e historial se conservan.
+      </p>
+    </div>
+    <a href="/panel/barberos/nuevo" class={btnPrimary} data-new-barber>+ Nuevo barbero</a>
+  </div>
+
+  {team.length === 0 ? (
+    <p class="text-zinc-500 text-sm py-12 text-center bg-zinc-900/30 border border-white/5 rounded-2xl">
+      Aún no hay barberos. Crea el primero con «Nuevo barbero».
+    </p>
+  ) : (
+    <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" data-barber-list>
+      {team.map((b) => (
+        <li
+          class={`${card} flex flex-col gap-5 transition-opacity ${b.isActive ? "" : "opacity-60"}`}
+          data-barber={b.id}
+          data-active={b.isActive ? "true" : "false"}
+        >
+          <div class="flex items-start gap-4">
+            <Avatar name={b.name} photoUrl={b.photoUrl} class="w-16 h-16 text-xl" />
+            <div class="min-w-0 flex-1">
+              <h2 class="font-serif text-xl font-bold text-white truncate" data-barber-name>{b.name}</h2>
+              <p class="text-[#D4AF37] text-[11px] font-black tracking-widest uppercase mt-0.5">{b.role}</p>
+              <div class="flex flex-wrap items-center gap-2 mt-2.5">
+                <ActiveBadge isActive={b.isActive} />
+                <span class="text-xs text-zinc-400" data-services-count>
+                  {b.servicesCount} {b.servicesCount === 1 ? "servicio" : "servicios"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <dl class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <dt class={eyebrow}>Usuario</dt>
+              <dd class="text-zinc-300 font-mono text-xs mt-0.5 break-all">{b.username ?? "—"}</dd>
+            </div>
+            <div>
+              <dt class={eyebrow}>WhatsApp</dt>
+              <dd class="text-zinc-300 tabular-nums text-xs mt-0.5">{b.phoneWhatsapp}</dd>
+            </div>
+          </dl>
+
+          <div class="flex flex-wrap items-center gap-3 mt-auto">
+            <a href={`/panel/barberos/${b.id}`} class={btnSecondary} data-edit>Editar</a>
+            {b.isActive ? (
+              <button type="button" class={btnDanger} data-toggle-active="false" data-name={b.name}>Desactivar</button>
+            ) : (
+              <button type="button" class={btnPrimary} data-toggle-active="true" data-name={b.name}>Activar</button>
+            )}
+            <span data-message class="text-sm" role="status" aria-live="polite"></span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <script>
+    import { sendJson, setMessage } from "../../../components/panel/form";
+
+    // Activar / desactivar desde la tarjeta (con confirmación) y recargar.
+    document.addEventListener("click", async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-toggle-active]");
+      if (!btn) return;
+      const li = btn.closest<HTMLElement>("[data-barber]")!;
+      const name = btn.dataset.name ?? "este barbero";
+      const activate = btn.dataset.toggleActive === "true";
+      const question = activate
+        ? `${name} volverá a aparecer en la página web, recibirá reservas y podrá iniciar sesión. ¿Activar?`
+        : `${name} dejará de aparecer en la página web, no recibirá reservas nuevas y no podrá iniciar sesión (se cierra su sesión ahora). Sus citas se conservan. ¿Desactivar?`;
+      if (!confirm(question)) return;
+
+      const message = li.querySelector<HTMLElement>("[data-message]")!;
+      btn.disabled = true;
+      setMessage(message, activate ? "Activando…" : "Desactivando…", "pending");
+      const res = await sendJson(`/api/panel/barbers/${li.dataset.barber}`, "PATCH", { isActive: activate });
+      if (res.ok) {
+        location.reload();
+      } else {
+        setMessage(message, res.error?.message ?? "No se pudo cambiar el estado.", "error");
+        btn.disabled = false;
+      }
+    });
+  </script>
+</PanelLayout>

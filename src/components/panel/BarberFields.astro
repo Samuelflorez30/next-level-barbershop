@@ -1,0 +1,98 @@
+---
+// Bloques "Datos del barbero" y "Servicios que ofrece" del formulario de
+// barbero. Los usan /panel/barberos/nuevo (vacío) y /panel/barberos/[id]
+// (prellenado). Cada campo lleva texto de ayuda y un <p data-error-for>
+// donde el navegador pinta el error que devuelve el servidor (422).
+import { DEFAULT_BARBER_ROLE } from "../../lib/barber-defaults";
+import { card, checkbox, h2, input as inputCls, label as labelCls } from "./ui";
+
+interface ServiceOption {
+  id: number;
+  name: string;
+  defaultPrice: number;
+}
+interface Props {
+  services: ServiceOption[];
+  /** Valores iniciales (edición). */
+  barber?: {
+    name: string;
+    role: string;
+    quote: string | null;
+    phoneWhatsapp: string;
+    photoUrl: string | null;
+    serviceIds: number[];
+  };
+}
+const { services, barber } = Astro.props;
+
+const cop = new Intl.NumberFormat("es-CO");
+const help = "text-xs text-zinc-500 mt-1.5";
+const error = "text-xs text-red-300 mt-1.5";
+// Sin barbero (alta) todos los servicios van marcados.
+const isChecked = (id: number) => (barber ? barber.serviceIds.includes(id) : true);
+---
+
+<section class={card} aria-labelledby="barber-data-title">
+  <h2 id="barber-data-title" class={`${h2} mb-1`}>Datos del barbero</h2>
+  <p class="text-zinc-500 text-sm mb-5">Nombre, rol y contacto. Esto es lo que ven los clientes en la página web.</p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="sm:col-span-2">
+      <label for="name" class={labelCls}>Nombre completo</label>
+      <input id="name" name="name" type="text" required maxlength="80" autocomplete="off" value={barber?.name ?? ""} class={inputCls} placeholder="Ej. Carlos Pérez" />
+      <p class={help}>Como aparecerá en la página web y en el panel.</p>
+      <p data-error-for="name" hidden class={error}></p>
+    </div>
+
+    <div>
+      <label for="role" class={labelCls}>Rol</label>
+      <input id="role" name="role" type="text" maxlength="60" value={barber?.role ?? DEFAULT_BARBER_ROLE} class={inputCls} />
+      <p class={help}>Aparece bajo el nombre. Si lo dejas vacío se usa «{DEFAULT_BARBER_ROLE}».</p>
+      <p data-error-for="role" hidden class={error}></p>
+    </div>
+
+    <div>
+      <label for="phoneWhatsapp" class={labelCls}>WhatsApp</label>
+      <input id="phoneWhatsapp" name="phoneWhatsapp" type="tel" inputmode="numeric" required autocomplete="off" value={barber?.phoneWhatsapp ?? ""} class={`${inputCls} tabular-nums`} placeholder="314 291 5681" />
+      <p class={help}>Solo el número, sin +57. Los clientes le escriben aquí al reservar.</p>
+      <p data-error-for="phoneWhatsapp" hidden class={error}></p>
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="quote" class={labelCls}>Frase corta <span class="normal-case tracking-normal font-normal text-zinc-600">(opcional)</span></label>
+      <input id="quote" name="quote" type="text" maxlength="160" value={barber?.quote ?? ""} class={inputCls} placeholder="Ej. No es solo un corte, es tu carta de presentación." />
+      <p class={help}>Aparece en la página web debajo de su nombre.</p>
+      <p data-error-for="quote" hidden class={error}></p>
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="photoUrl" class={labelCls}>Foto <span class="normal-case tracking-normal font-normal text-zinc-600">(opcional)</span></label>
+      <input id="photoUrl" name="photoUrl" type="text" maxlength="500" autocomplete="off" spellcheck="false" value={barber?.photoUrl ?? ""} class={`${inputCls} font-mono text-xs`} placeholder="/carlos.jpg" />
+      <p class={help}>Lo configura el desarrollador. Puedes dejarlo vacío: se mostrará un círculo dorado con sus iniciales.</p>
+      <p data-error-for="photoUrl" hidden class={error}></p>
+    </div>
+  </div>
+</section>
+
+<section class={card} aria-labelledby="barber-services-title">
+  <h2 id="barber-services-title" class={`${h2} mb-1`}>Servicios que ofrece</h2>
+  <p class="text-zinc-500 text-sm mb-5">
+    Los clientes solo podrán reservar con este barbero los servicios marcados. Puedes cambiarlo después.
+  </p>
+  {services.length === 0 ? (
+    <p class="text-zinc-500 text-sm">No hay servicios activos.</p>
+  ) : (
+    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5" data-services>
+      {services.map((s) => (
+        <li>
+          <label class="flex items-center gap-3 text-sm cursor-pointer select-none py-1">
+            <input type="checkbox" name="serviceIds" value={s.id} checked={isChecked(s.id)} class={checkbox} />
+            <span class="text-zinc-200">{s.name}</span>
+            <span class="ml-auto text-xs text-zinc-500 tabular-nums">${cop.format(s.defaultPrice)}</span>
+          </label>
+        </li>
+      ))}
+    </ul>
+  )}
+  <p data-error-for="serviceIds" hidden class={`${error} mt-3`}></p>
+</section>

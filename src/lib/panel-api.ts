@@ -10,8 +10,17 @@ export function requireUser(locals: App.Locals): SessionUser {
   return locals.user;
 }
 
+/** Solo el admin (gestión de barberos). Un barbero recibe 403. */
+export function requireAdmin(locals: App.Locals): SessionUser {
+  const user = requireUser(locals);
+  if (user.role !== 'admin') {
+    throw new PanelError(403, 'FORBIDDEN', 'Solo el administrador puede hacer esto.');
+  }
+  return user;
+}
+
 export function panelErrorResponse(err: unknown): Response {
-  if (err instanceof PanelError) return apiError(err.status, err.code, err.message);
+  if (err instanceof PanelError) return apiError(err.status, err.code, err.message, err.details);
   throw err;
 }
 

@@ -13,6 +13,9 @@ const scrypt = promisify(scryptCb);
 
 const BCRYPT_ROUNDS = 12;
 
+/** Longitud mínima de una contraseña elegida por el usuario (Mi cuenta). */
+export const MIN_PASSWORD_LENGTH = 8;
+
 export async function hashPassword(plain: string): Promise<string> {
   return bcrypt.hash(plain, BCRYPT_ROUNDS);
 }

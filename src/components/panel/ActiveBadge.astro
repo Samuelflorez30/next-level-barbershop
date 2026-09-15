@@ -1,0 +1,14 @@
+---
+// Pill "Activo" / "Inactivo" de un barbero (mismo estilo que StatusBadge).
+import { ACTIVE_BADGE, ACTIVE_DOT, ACTIVE_LABELS, BADGE_BASE, type ActiveState } from "./status-styles";
+
+interface Props {
+  isActive: boolean;
+}
+const state: ActiveState = Astro.props.isActive ? "active" : "inactive";
+---
+
+<span class={`${BADGE_BASE} ${ACTIVE_BADGE[state]}`} data-active-state={state}>
+  <span class={`w-1.5 h-1.5 rounded-full ${ACTIVE_DOT[state]}`} aria-hidden="true"></span>
+  {ACTIVE_LABELS[state]}
+</span>

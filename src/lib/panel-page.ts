@@ -59,3 +59,13 @@ export async function getPanelContext(Astro: AstroGlobal): Promise<PanelContext 
 
   return { user, barbers, selected, href };
 }
+
+/**
+ * Igual que `getPanelContext`, pero solo para el admin (gestión de barberos):
+ * un usuario con rol barbero es redirigido a /panel.
+ */
+export async function getAdminPanelContext(Astro: AstroGlobal): Promise<PanelContext | Response> {
+  const user = Astro.locals.user;
+  if (user && user.role !== 'admin') return Astro.redirect('/panel');
+  return getPanelContext(Astro);
+}

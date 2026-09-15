@@ -1,0 +1,93 @@
+---
+// Mi cuenta: cambio de contraseña del usuario de la sesión (admin o barbero).
+// Exige la contraseña actual; al cambiarla se cierran las demás sesiones y
+// esta sigue activa.
+import PanelLayout from "../../layouts/PanelLayout.astro";
+import { getPanelContext } from "../../lib/panel-page";
+import { MIN_PASSWORD_LENGTH } from "../../lib/password";
+import { btnPrimary, card, eyebrow, h2, input as inputCls, label as labelCls } from "../../components/panel/ui";
+
+const ctx = await getPanelContext(Astro);
+if (ctx instanceof Response) return ctx;
+const { user, selected } = ctx;
+
+const help = "text-xs text-zinc-500 mt-1.5";
+const error = "text-xs text-red-300 mt-1.5";
+---
+
+<PanelLayout title="Mi cuenta" ctx={ctx} active="cuenta">
+  <div class="max-w-xl">
+    <p class={`${eyebrow} mb-1`}>Mi cuenta</p>
+    <h1 class="font-serif text-3xl font-bold text-white mb-2">{user.role === "admin" ? "Administrador" : selected.name}</h1>
+    <p class="text-zinc-400 text-sm mb-8">
+      Entras con el usuario <span class="font-mono text-zinc-200">{user.username}</span>.
+      Aquí puedes cambiar tu contraseña; si te dieron una temporal, cámbiala ahora.
+    </p>
+
+    <form id="password-form" class={`${card} space-y-5`} novalidate>
+      <h2 class={h2}>Cambiar contraseña</h2>
+
+      <div>
+        <label for="currentPassword" class={labelCls}>Contraseña actual</label>
+        <input id="currentPassword" name="currentPassword" type="password" required autocomplete="current-password" class={inputCls} />
+        <p data-error-for="currentPassword" hidden class={error}></p>
+      </div>
+
+      <div>
+        <label for="newPassword" class={labelCls}>Contraseña nueva</label>
+        <input id="newPassword" name="newPassword" type="password" required minlength={MIN_PASSWORD_LENGTH} autocomplete="new-password" class={inputCls} />
+        <p class={help}>Mínimo {MIN_PASSWORD_LENGTH} caracteres. Elige una que solo tú conozcas.</p>
+        <p data-error-for="newPassword" hidden class={error}></p>
+      </div>
+
+      <div>
+        <label for="confirmPassword" class={labelCls}>Repite la contraseña nueva</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" required minlength={MIN_PASSWORD_LENGTH} autocomplete="new-password" class={inputCls} />
+        <p data-error-for="confirmPassword" hidden class={error}></p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 pt-1">
+        <button type="submit" class={btnPrimary} data-save>Guardar contraseña</button>
+        <span data-message class="text-sm" role="status" aria-live="polite"></span>
+      </div>
+
+      <p data-success hidden class="flex items-start gap-2 border border-emerald-500/40 bg-emerald-500/10 text-emerald-200 text-sm rounded-md px-4 py-3">
+        <span aria-hidden="true">✔</span>
+        <span><strong>Contraseña actualizada.</strong> Úsala la próxima vez que entres. Si tenías la sesión abierta en otro dispositivo, allí se cerró.</span>
+      </p>
+    </form>
+  </div>
+
+  <script>
+    import { clearFieldErrors, sendJson, setMessage, showFieldErrors } from "../../components/panel/form";
+
+    const form = document.getElementById("password-form") as HTMLFormElement;
+    const message = form.querySelector<HTMLElement>("[data-message]")!;
+    const success = form.querySelector<HTMLElement>("[data-success]")!;
+    const save = form.querySelector<HTMLButtonElement>("[data-save]")!;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFieldErrors(form);
+      success.hidden = true;
+      const fd = new FormData(form);
+      const body = {
+        currentPassword: fd.get("currentPassword"),
+        newPassword: fd.get("newPassword"),
+        confirmPassword: fd.get("confirmPassword"),
+      };
+      save.disabled = true;
+      setMessage(message, "Guardando…", "pending");
+      const res = await sendJson("/api/panel/account/password", "POST", body);
+      save.disabled = false;
+      if (!res.ok) {
+        const shown = showFieldErrors(form, res.error?.details);
+        setMessage(message, shown ? "Revisa los campos marcados." : (res.error?.message ?? "No se pudo cambiar la contraseña."), "error");
+        return;
+      }
+      setMessage(message, "", "");
+      form.reset();
+      success.hidden = false;
+    });
+  </script>
+</PanelLayout>

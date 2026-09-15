@@ -28,3 +28,21 @@ export const STATUS_DOT: Record<AppointmentStatus, string> = {
 
 /** La "próxima cita" usa el mismo tratamiento que una cita confirmada. */
 export const NEXT_BADGE = STATUS_BADGE.confirmed;
+
+/** Estado activo/inactivo de un barbero, con el mismo lenguaje visual que las citas. */
+export type ActiveState = 'active' | 'inactive';
+
+export const ACTIVE_LABELS: Record<ActiveState, string> = {
+  active: 'Activo',
+  inactive: 'Inactivo',
+};
+
+export const ACTIVE_BADGE: Record<ActiveState, string> = {
+  active: STATUS_BADGE.completed,
+  inactive: STATUS_BADGE.pending,
+};
+
+export const ACTIVE_DOT: Record<ActiveState, string> = {
+  active: STATUS_DOT.completed,
+  inactive: STATUS_DOT.pending,
+};

@@ -19,6 +19,7 @@ import {
   type NewBarber,
   type NewService,
 } from './schema';
+import { DEFAULT_BARBER_ROLE, WEEKLY_SCHEDULE } from '../lib/barber-defaults';
 import { generateTemporaryPassword, hashPassword } from '../lib/password';
 
 // ---------------------------------------------------------------------------
@@ -29,7 +30,7 @@ const BARBERS: NewBarber[] = [
   {
     slug: 'oswar-avendano',
     name: 'Oswar Avendaño',
-    role: 'Master Barber',
+    role: DEFAULT_BARBER_ROLE,
     quote: 'La perfección no es un objetivo, es nuestro estándar.',
     photoUrl: '/oswar2.jpg',
     phoneWhatsapp: '573142915681',
@@ -38,7 +39,7 @@ const BARBERS: NewBarber[] = [
   {
     slug: 'stiven-tapia',
     name: 'Stiven Tapia',
-    role: 'Master Barber',
+    role: DEFAULT_BARBER_ROLE,
     quote: 'Tu cabello es el lienzo, la navaja es mi pincel.',
     photoUrl: '/harolportada.jpg',
     phoneWhatsapp: '573183452539',
@@ -47,7 +48,7 @@ const BARBERS: NewBarber[] = [
   {
     slug: 'jesus-montoya',
     name: 'Jesus Montoya',
-    role: 'Master Barber',
+    role: DEFAULT_BARBER_ROLE,
     quote:
       'Diseñamos un estilo que hable por ti antes de que digas una palabra.',
     photoUrl: '/JesusMontoya.jpeg',
@@ -57,7 +58,7 @@ const BARBERS: NewBarber[] = [
   {
     slug: 'jesus-toro',
     name: 'Jesus Toro',
-    role: 'Master Barber',
+    role: DEFAULT_BARBER_ROLE,
     quote: 'No es solo un corte, es tu carta de presentación.',
     photoUrl: '/JesusToro.jpeg',
     phoneWhatsapp: '573183175916',
@@ -158,18 +159,8 @@ const SERVICES: NewService[] = [
   },
 ];
 
-// Horario de atención (hora local Bogotá). day_of_week: 0 = lunes … 6 = domingo.
-// Lunes a sábado 09:00–21:00; domingo 10:00–21:00. La última cita (20:00)
-// se deriva de cierre − duración del servicio en la lógica de disponibilidad.
-const WEEKLY_SCHEDULE: { dayOfWeek: number; startTime: string; endTime: string }[] = [
-  { dayOfWeek: 0, startTime: '09:00', endTime: '21:00' }, // lunes
-  { dayOfWeek: 1, startTime: '09:00', endTime: '21:00' }, // martes
-  { dayOfWeek: 2, startTime: '09:00', endTime: '21:00' }, // miércoles
-  { dayOfWeek: 3, startTime: '09:00', endTime: '21:00' }, // jueves
-  { dayOfWeek: 4, startTime: '09:00', endTime: '21:00' }, // viernes
-  { dayOfWeek: 5, startTime: '09:00', endTime: '21:00' }, // sábado
-  { dayOfWeek: 6, startTime: '10:00', endTime: '21:00' }, // domingo
-];
+// El horario semanal por defecto (WEEKLY_SCHEDULE) vive en src/lib/barber-defaults.ts,
+// compartido con el alta de barberos desde el panel.
 
 // El admin entra con su email real; los barberos con un usuario simple
 // derivado del slug (sin guiones): oswaravendano, stiventapia, …

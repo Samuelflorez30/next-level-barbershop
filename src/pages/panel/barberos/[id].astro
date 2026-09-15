@@ -1,0 +1,176 @@
+---
+// Edición de un barbero (solo admin): mismo formulario que el alta (sin el
+// bloque de acceso), más "Generar nueva contraseña" (rescate, con
+// confirmación) y activar / desactivar.
+import PanelLayout from "../../../layouts/PanelLayout.astro";
+import Avatar from "../../../components/Avatar.astro";
+import ActiveBadge from "../../../components/panel/ActiveBadge.astro";
+import BarberFields from "../../../components/panel/BarberFields.astro";
+import CredentialsCard from "../../../components/panel/CredentialsCard.astro";
+import { getAdminPanelContext } from "../../../lib/panel-page";
+import { getBarberAdmin, listActiveServices, type AdminBarber } from "../../../lib/barbers-admin";
+import { PanelError } from "../../../lib/panel";
+import { btnDanger, btnPrimary, btnSecondary, card, eyebrow, h2, link } from "../../../components/panel/ui";
+
+const ctx = await getAdminPanelContext(Astro);
+if (ctx instanceof Response) return ctx;
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id) || id <= 0) return Astro.redirect("/panel/barberos");
+
+let barber: AdminBarber;
+try {
+  barber = await getBarberAdmin(id);
+} catch (err) {
+  if (err instanceof PanelError && err.status === 404) return new Response("Barbero no encontrado.", { status: 404 });
+  throw err;
+}
+const services = await listActiveServices();
+// Tras guardar se recarga con ?saved=1 para refrescar nombre/foto del encabezado
+// y dejar visible la confirmación.
+const justSaved = Astro.url.searchParams.get("saved") === "1";
+---
+
+<PanelLayout title={`Editar · ${barber.name}`} ctx={ctx} active="barberos">
+  <div class="max-w-3xl">
+    <a href="/panel/barberos" class={link}>← Volver al equipo</a>
+
+    <div class="flex items-center gap-4 mt-5 mb-8">
+      <Avatar name={barber.name} photoUrl={barber.photoUrl} class="w-16 h-16 text-xl" />
+      <div class="min-w-0">
+        <p class={`${eyebrow} mb-1`}>Editar barbero</p>
+        <h1 class="font-serif text-3xl font-bold text-white truncate">{barber.name}</h1>
+        <div class="mt-1.5"><ActiveBadge isActive={barber.isActive} /></div>
+      </div>
+    </div>
+
+    <form id="barber-form" data-barber-id={barber.id} class="space-y-6" novalidate>
+      <BarberFields services={services} barber={barber} />
+      <div class="flex flex-wrap items-center gap-4 pt-2">
+        <button type="submit" class={btnPrimary} data-save>Guardar cambios</button>
+        <span data-message class={`text-sm ${justSaved ? "text-emerald-300" : ""}`} data-state={justSaved ? "saved" : undefined} role="status" aria-live="polite">{justSaved ? "Cambios guardados." : ""}</span>
+      </div>
+    </form>
+
+    <!-- Acceso al panel: contraseña de rescate -->
+    <section class={`${card} mt-10`} aria-labelledby="access-title" data-access>
+      <h2 id="access-title" class={`${h2} mb-1`}>Acceso al panel</h2>
+      <p class="text-zinc-500 text-sm mb-5">
+        Usuario: <span class="font-mono text-zinc-200">{barber.username ?? "sin usuario"}</span>.
+        Si {barber.name} olvidó su contraseña, genera una nueva aquí: la actual deja de funcionar, se cierra su
+        sesión y deberá entrar con la temporal (y cambiarla en «Mi cuenta»).
+      </p>
+      {barber.username ? (
+        <div class="flex flex-wrap items-center gap-4">
+          <button type="button" class={btnSecondary} data-reset-password data-name={barber.name} data-phone={barber.phoneWhatsapp}>Generar nueva contraseña</button>
+          <span data-reset-message class="text-sm" role="status" aria-live="polite"></span>
+        </div>
+      ) : (
+        <p class="text-sm text-orange-200">Este barbero no tiene usuario del panel.</p>
+      )}
+      <div class="mt-5">
+        <CredentialsCard />
+      </div>
+    </section>
+
+    <!-- Estado -->
+    <section class={`${card} mt-6`} aria-labelledby="state-title" data-state>
+      <h2 id="state-title" class={`${h2} mb-1`}>Estado</h2>
+      <p class="text-zinc-500 text-sm mb-5">
+        {barber.isActive
+          ? "Está activo: aparece en la página web, recibe reservas y puede iniciar sesión."
+          : "Está inactivo: no aparece en la página web, no recibe reservas nuevas y no puede iniciar sesión. Sus citas e historial se conservan."}
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        {barber.isActive ? (
+          <button type="button" class={btnDanger} data-toggle-active="false" data-name={barber.name}>Desactivar barbero</button>
+        ) : (
+          <button type="button" class={btnPrimary} data-toggle-active="true" data-name={barber.name}>Activar barbero</button>
+        )}
+        <span data-state-message class="text-sm" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    import { fillCredentials, type Credentials } from "../../../components/panel/credentials";
+    import { clearFieldErrors, sendJson, setMessage, showFieldErrors } from "../../../components/panel/form";
+
+    type BarberResponse = { barber: { id: number; name: string; phoneWhatsapp: string; isActive: boolean } };
+
+    const form = document.getElementById("barber-form") as HTMLFormElement;
+    const barberId = form.dataset.barberId!;
+    const endpoint = `/api/panel/barbers/${barberId}`;
+    const message = form.querySelector<HTMLElement>("[data-message]")!;
+    const save = form.querySelector<HTMLButtonElement>("[data-save]")!;
+
+    // --- Guardar datos y servicios ---------------------------------------
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFieldErrors(form);
+      const fd = new FormData(form);
+      const body = {
+        name: fd.get("name"),
+        role: fd.get("role"),
+        quote: fd.get("quote"),
+        phoneWhatsapp: fd.get("phoneWhatsapp"),
+        photoUrl: fd.get("photoUrl"),
+        serviceIds: fd.getAll("serviceIds").map(Number),
+      };
+      save.disabled = true;
+      setMessage(message, "Guardando…", "pending");
+      const res = await sendJson<BarberResponse>(endpoint, "PATCH", body);
+      save.disabled = false;
+      if (!res.ok) {
+        const shown = showFieldErrors(form, res.error?.details);
+        setMessage(message, shown ? "Revisa los campos marcados." : (res.error?.message ?? "No se pudieron guardar los cambios."), "error");
+        return;
+      }
+      // Recarga para refrescar nombre/foto del encabezado; ?saved=1 mantiene la confirmación visible.
+      location.href = `${location.pathname}?saved=1`;
+    });
+
+    // --- Generar nueva contraseña (rescate explícito) --------------------
+    const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-password]");
+    resetBtn?.addEventListener("click", async () => {
+      const name = resetBtn.dataset.name ?? "este barbero";
+      if (!confirm(`Esto invalida la contraseña actual de ${name}. ¿Continuar?`)) return;
+      const resetMessage = document.querySelector<HTMLElement>("[data-reset-message]")!;
+      resetBtn.disabled = true;
+      setMessage(resetMessage, "Generando…", "pending");
+      const res = await sendJson<{ credentials: Credentials }>(`${endpoint}/reset-password`, "POST");
+      resetBtn.disabled = false;
+      if (!res.ok) {
+        setMessage(resetMessage, res.error?.message ?? "No se pudo generar la contraseña.", "error");
+        return;
+      }
+      setMessage(resetMessage, "Contraseña nueva generada.", "success");
+      fillCredentials(document.querySelector<HTMLElement>("[data-access] [data-credentials]")!, {
+        barberName: name,
+        phone: resetBtn.dataset.phone ?? "",
+        credentials: res.data.credentials,
+      });
+    });
+
+    // --- Activar / desactivar --------------------------------------------
+    const toggleBtn = document.querySelector<HTMLButtonElement>("[data-toggle-active]");
+    toggleBtn?.addEventListener("click", async () => {
+      const name = toggleBtn.dataset.name ?? "este barbero";
+      const activate = toggleBtn.dataset.toggleActive === "true";
+      const question = activate
+        ? `${name} volverá a aparecer en la página web, recibirá reservas y podrá iniciar sesión. ¿Activar?`
+        : `${name} dejará de aparecer en la página web, no recibirá reservas nuevas y no podrá iniciar sesión (se cierra su sesión ahora). Sus citas se conservan. ¿Desactivar?`;
+      if (!confirm(question)) return;
+      const stateMessage = document.querySelector<HTMLElement>("[data-state-message]")!;
+      toggleBtn.disabled = true;
+      setMessage(stateMessage, activate ? "Activando…" : "Desactivando…", "pending");
+      const res = await sendJson<BarberResponse>(endpoint, "PATCH", { isActive: activate });
+      if (res.ok) {
+        location.reload();
+      } else {
+        setMessage(stateMessage, res.error?.message ?? "No se pudo cambiar el estado.", "error");
+        toggleBtn.disabled = false;
+      }
+    });
+  </script>
+</PanelLayout>

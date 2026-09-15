@@ -128,7 +128,11 @@ token. Las contraseñas se almacenan con **bcrypt**; los hashes scrypt del seed
 inicial se migran automáticamente en el primer inicio de sesión.
 
 `src/middleware.ts` redirige `/panel/**` a `/login` sin sesión, responde 401 en
-`/api/panel/**`, y expone `Astro.locals.user = { id, email, role, barberId }`.
+`/api/panel/**`, y expone `Astro.locals.user = { id, username, role, barberId }`.
+
+Un barbero **desactivado** desde el panel (`barbers.is_active = false`) no
+puede iniciar sesión: `POST /api/auth/login` responde igual que con una
+contraseña incorrecta. Al reactivarlo entra con la misma contraseña.
 
 ## Reglas de autorización
 
@@ -138,6 +142,13 @@ inicial se migran automáticamente en el primer inicio de sesión.
 - `role = 'admin'` → indica `barberId` (obligatorio en horarios; opcional en
   citas y días libres, donde vacío = todos). `barberId: null` en `time-off`
   crea un cierre para todo el negocio.
+- La **gestión de barberos** (`/api/panel/barbers/**` y las páginas
+  `/panel/barberos/*`) es solo para `admin`: un barbero recibe `403 FORBIDDEN`
+  en los endpoints y es redirigido a `/panel` en las páginas.
+
+Los errores de validación de estos endpoints responden `422 VALIDATION_ERROR`
+con `details = { campo: [mensajes en español] }`, que el panel muestra junto a
+cada campo.
 
 > Los endpoints del panel están protegidos por CSRF (`checkOrigin` de Astro):
 > las peticiones desde fuera del navegador deben enviar
@@ -172,3 +183,74 @@ GET    /api/panel/time-off?barberId=&includePast=1
 POST   /api/panel/time-off             { barberId?, startLocal: 'YYYY-MM-DDTHH:MM', endLocal, reason? }  // hora local Bogotá
 DELETE /api/panel/time-off/:id
 ```
+
+## Barberos (solo admin)
+
+```
+GET   /api/panel/barbers                       → { barbers: [{ …barber, serviceIds, servicesCount, username }] }
+POST  /api/panel/barbers                       { name, phoneWhatsapp, role?, quote?, photoUrl?, serviceIds?, username? }
+PATCH /api/panel/barbers/:id                   { name?, role?, quote?, phoneWhatsapp?, photoUrl?, serviceIds? }  // edita
+PATCH /api/panel/barbers/:id                   { isActive: true | false }                                        // activa / desactiva
+POST  /api/panel/barbers/:id/reset-password    → { credentials: { username, password } }
+```
+
+No existe `DELETE`: un barbero se **desactiva**. Inactivo no aparece en la web
+ni en `GET /api/barbers`, no acepta reservas y no puede iniciar sesión; sus
+citas e historial se conservan. Al desactivarlo se cierran sus sesiones.
+
+`GET` lista **todos** (activos e inactivos, estos últimos al final) con el
+conteo de servicios ofrecidos y el usuario de login.
+
+`POST` crea **todo en una transacción**: la fila en `barbers` (el `slug` se
+deriva del nombre: "Carlos Pérez" → `carlos-perez`, y `displayOrder` va al
+final), sus `barber_services` (`serviceIds`; sin el campo, todos los servicios
+activos), el horario semanal por defecto (`WEEKLY_SCHEDULE` en
+`src/lib/barber-defaults.ts`, el mismo del seed) y su usuario del panel con
+contraseña temporal. Responde `201 { barber, credentials }`; la contraseña solo
+se entrega en esa respuesta (en la DB queda el hash).
+
+- `username`: opcional. Si no viene se deriva del nombre (sin tildes,
+  minúsculas, solo letras y números: `carlosperez`; si ya existe,
+  `carlosperez2`, `carlosperez3`…). Si viene y ya existe → 422 con la
+  sugerencia en `details.username`.
+- `phoneWhatsapp`: 10–15 dígitos; se aceptan espacios y `+57`, se guardan solo
+  dígitos y a un número de 10 dígitos se le antepone `57`
+  (`"314 291 5681"` → `573142915681`).
+- `role`: vacío → `"Master Barber"`. `quote`: opcional, máx. 160.
+- `photoUrl`: opcional; ruta dentro de `/public` que empiece por `/`
+  (`/carlos.jpg`) o URL `http(s)://`. Vacío → se muestran sus iniciales.
+- `bufferMinutes` no se expone (queda en 0).
+
+`PATCH` con `serviceIds` sincroniza `barber_services` **sin borrar filas**:
+inserta los nuevos, vuelve a ofrecer los re-marcados y pone
+`is_offered = false` a los desmarcados (se conservan precio/duración
+personalizados). Los campos ausentes no se tocan. 404 si el barbero no existe.
+
+`POST …/reset-password` es un **rescate explícito** del admin (el panel pide
+confirmación): genera otra contraseña temporal para ese barbero e invalida sus
+sesiones. Nunca se llama de forma automática y nunca toca a otros usuarios.
+404 `USER_NOT_FOUND` si el barbero no tiene usuario.
+
+```sh
+curl -X POST http://localhost:4321/api/panel/barbers \
+  -H 'Content-Type: application/json' -b 'nlb_session=…' \
+  -d '{ "name": "Carlos Pérez", "phoneWhatsapp": "314 291 5681", "quote": "Estilo con navaja" }'
+```
+
+```json
+{
+  "barber": { "id": 5, "name": "Carlos Pérez", "slug": "carlos-perez", "role": "Master Barber", "phoneWhatsapp": "573142915681", "photoUrl": null, "isActive": true, "displayOrder": 5, "serviceIds": [1, 2, 3, 4, 5, 6, 7, 8, 9], "servicesCount": 9, "username": "carlosperez", "…": "…" },
+  "credentials": { "username": "carlosperez", "password": "zX0Dj6p4j6_P" }
+}
+```
+
+## Mi cuenta (admin y barberos)
+
+```
+POST /api/panel/account/password    { currentPassword, newPassword, confirmPassword }   → { ok: true }
+```
+
+Cambia la contraseña del usuario de la sesión. Verifica la actual; la nueva
+debe tener al menos 8 caracteres, ser distinta de la actual y coincidir con la
+confirmación (422 con `details` por campo si no). Al cambiarla se cierran las
+**demás** sesiones del usuario y la actual sigue activa.
